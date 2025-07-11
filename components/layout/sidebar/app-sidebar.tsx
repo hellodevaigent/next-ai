@@ -117,7 +117,7 @@ export function AppSidebar() {
             ) : hasChats ? (
               <ScrollArea className="flex h-[calc(100vh_-_350px)] [&>div>div]:!block [&>div>div]:space-y-3">
                 <div
-                  className={`space-y-5 duration-350 ${open ? "opacity-100" : "md:opacity-0"}`}
+                  className={`duration-350 ${open ? "opacity-100" : "md:opacity-0"}`}
                 >
                   {groupedChats?.map((group) => (
                     <SidebarList
