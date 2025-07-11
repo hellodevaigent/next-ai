@@ -52,9 +52,9 @@ export function SettingsContent({ isMobile = false }: SettingsContentProps) {
       >
         {isMobile ? (
           // Mobile version - tabs on top
-          <div className="w-full items-start justify-start hidden-scrollbar pt-4 pb-2">
+          <div className="w-full items-start justify-start hidden-scrollbar pt-4">
             <TabsList
-              className="sticky -top-[16px] hidden-x-scrollbar flex w-full min-w-0 gap-1 flex-nowrap items-center justify-start overflow-y-hidden bg-background px-0 py-3 z-10"
+              className="sticky -top-[17px] hidden-x-scrollbar flex w-full min-w-0 gap-1 flex-nowrap items-center justify-start overflow-y-hidden bg-background px-0 py-3 z-10"
             >
               <TabsTrigger
                 value="general"

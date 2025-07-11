@@ -235,7 +235,7 @@ export function ByokSection() {
   }
 
   return (
-    <div className="max-md:h-[calc(100vh_-_150px)]">
+    <div className="max-md:h-[calc(100vh_-_140px)]">
       <h3 className="relative mb-2 inline-flex text-lg font-medium">
         Model Providers{" "}
         <span className="text-muted-foreground absolute top-0 -right-7 text-xs">
@@ -249,7 +249,7 @@ export function ByokSection() {
         Your keys are stored securely with end-to-end encryption.
       </p>
 
-      <div className="space-y-4 pb-6">
+      <div className="space-y-4 pb-10">
         {PROVIDERS.map((provider) => {
           const isLoading = loadingProviders.has(provider.id)
           const isDeleting = deletingProviders.has(provider.id)

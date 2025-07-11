@@ -115,7 +115,7 @@ export function ModelsSettings() {
   }
 
   return (
-    <div className="space-y-6 max-md:h-[calc(100vh_-_150px)]">
+    <div className="space-y-6 max-md:h-[calc(100vh_-_140px)]">
       <div>
         <h3 className="mb-2 text-lg font-medium">Models</h3>
         <p className="text-muted-foreground mb-4 text-sm">
@@ -212,7 +212,7 @@ export function ModelsSettings() {
         </p>
 
         {/* Search */}
-        <div className="mb-4 max-md:sticky max-md:top-[45px]">
+        <div className="mb-4">
           <input
             type="text"
             placeholder="Search models..."
@@ -223,7 +223,7 @@ export function ModelsSettings() {
         </div>
 
         {/* Models grouped by provider */}
-        <div className="space-y-6 pb-6">
+        <div className="space-y-6 pb-10">
           {Object.entries(availableModelsByProvider).map(
             ([iconKey, modelsGroup]) => {
               const firstModel = modelsGroup[0]
