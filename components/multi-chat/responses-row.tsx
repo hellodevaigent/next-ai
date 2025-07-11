@@ -102,7 +102,7 @@ export function ResponsesRow({ group, responses }: ResponsesRowProps) {
             <ArrowButton
               onClick={() => instanceRef.current?.next()}
               disabled={
-                currentSlide >= instanceRef.current.track.details.slides.length - 1
+                currentSlide >= (instanceRef.current?.track?.details?.slides?.length ?? 1) - 1
               }
             >
               <ChevronRightIcon className="size-4" />
