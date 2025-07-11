@@ -46,19 +46,19 @@ export function AppSidebar() {
         <div className="flex items-center justify-between">
           {isMobile ? (
             <>
-              <Link
-                href="/"
-                className="pointer-events-auto inline-flex items-center text-xl font-medium tracking-tight pl-3"
-              >
-                {APP_NAME}
-              </Link>
               <button
                 type="button"
                 onClick={() => setOpenMobile(false)}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-9 items-center justify-center rounded-md bg-transparent transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex mt-0.5 size-9 items-center justify-center rounded-md bg-transparent transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 <X size={24} />
               </button>
+              <Link
+                href="/"
+                className="pointer-events-auto inline-flex items-center text-xl font-medium tracking-tight pr-2"
+              >
+                {APP_NAME}
+              </Link>
             </>
           ) : (
             <div className="h-full" />

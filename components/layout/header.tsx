@@ -25,7 +25,7 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
 
   return (
     <header className={cn(
-      "h-app-header backdrop-blur-md pointer-events-none border-b border-border fixed top-0 right-0 left-0 z-50",
+      "h-app-header max-md:backdrop-blur-md pointer-events-none border-b border-border fixed top-0 right-0 left-0 z-50",
       hasSidebar && "md:border-none"
     )}>
       <div className={cn(
@@ -47,7 +47,10 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
               {hasSidebar && <HeaderSidebarTrigger />}
               <Link
                 href="/"
-                className="pointer-events-auto inline-flex items-center text-xl font-medium tracking-tight duration-250"
+                className={cn(
+                  "pointer-events-auto inline-flex items-center text-xl font-medium tracking-tight duration-250",
+                  open ? "opacity-100" : "opacity-0"
+                )}
               >
                 {APP_NAME}
               </Link>
