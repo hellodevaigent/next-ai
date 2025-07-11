@@ -37,8 +37,8 @@ export function SettingsContent({ isMobile = false }: SettingsContentProps) {
   const { preferences } = useUserPreferences();
   const hasSidebar = preferences.layout === "sidebar"
 
-  const maskFrom = "mask-x-from-85%"
-  const maskTo = "mask-x-to-99%"
+  // const maskFrom = "mask-x-from-85%"
+  // const maskTo = "mask-x-to-99%"
 
   return (
     <div className={`flex w-full flex-col overflow-hidden pt-14 ${hasSidebar ? 'md:pt-0' : ''} `}>
@@ -46,15 +46,15 @@ export function SettingsContent({ isMobile = false }: SettingsContentProps) {
         value={activeTab}
         onValueChange={(value) => setActiveTab(value as TabType)}
         className={cn(
-          "flex w-full flex-row",
+          "flex w-full flex-row mx-auto max-w-5xl",
           isMobile ? "" : "flex h-[calc(100vh_-_58px)] overflow-hidden"
         )}
       >
         {isMobile ? (
           // Mobile version - tabs on top
-          <div className="w-full items-start justify-start overflow-hidden py-4">
+          <div className="w-full items-start justify-start hidden-scrollbar pt-4 pb-2">
             <TabsList
-              className={`hidden-x-scrollbar mb-4 flex w-full min-w-0 gap-1 flex-nowrap items-center justify-start overflow-y-hidden bg-transparent px-0 ${maskFrom} ${maskTo}`}
+              className="sticky -top-[16px] hidden-x-scrollbar flex w-full min-w-0 gap-1 flex-nowrap items-center justify-start overflow-y-hidden bg-background px-0 py-3 z-10"
             >
               <TabsTrigger
                 value="general"
@@ -126,8 +126,9 @@ export function SettingsContent({ isMobile = false }: SettingsContentProps) {
         ) : (
           // Desktop version - tabs on left
           <>
-            <TabsList className="block w-52 h-full rounded-none bg-transparent p-3">
+            <TabsList className="block w-64 h-full rounded-none bg-transparent p-3 md:px-6">
               <div className="flex w-full flex-col gap-1">
+                <h3 className="text-2xl mb-3">Settings</h3>
                 <TabsTrigger
                   value="general"
                   className="w-full justify-start rounded-md px-3 py-2 text-left"
@@ -179,7 +180,7 @@ export function SettingsContent({ isMobile = false }: SettingsContentProps) {
             </TabsList>
 
             {/* Desktop tabs content */}
-            <div ref={scrollbarContainerRef} className="flex-1 px-4 pt-4 hidden-scrollbar border-l">
+            <div ref={scrollbarContainerRef} className="flex-1 px-4 py-16 hidden-scrollbar md:border-l md:px-6">
               <TabsContent value="general" className="mt-0 space-y-6">
                 <UserProfile />
                 {isSupabaseEnabled && (
@@ -201,7 +202,6 @@ export function SettingsContent({ isMobile = false }: SettingsContentProps) {
 
               <TabsContent value="models" className="mt-0 space-y-6">
                 <ModelsSettings />
-                {/* <ModelVisibilitySettings /> */}
               </TabsContent>
 
               <TabsContent value="connections" className="mt-0 space-y-6">

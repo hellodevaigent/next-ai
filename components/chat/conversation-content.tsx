@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react"
 import { ConversationProps } from "./conversation"
 import { Message } from "./message"
 import { useContainerDistance } from "./use-distance"
+import { cn } from "@/lib/utils"
 
 export function ConversationContent({
   messages,
@@ -35,7 +36,10 @@ export function ConversationContent({
   return (
     <ChatContainerContent
       ref={containerRef as React.RefObject<HTMLDivElement>}
-      className={`flex w-full flex-col items-center pb-4 ${hasSidebar ? "pt-22 md:pt-12" : "pt-22"}`}
+      className={cn(
+        "flex w-full flex-col items-center pb-4",
+        hasSidebar ? "pt-22 md:pt-12" : "pt-22"
+      )}
       style={{
         scrollbarGutter: "stable both-edges",
         scrollbarWidth: "none",
@@ -43,8 +47,7 @@ export function ConversationContent({
     >
       {messages?.map((message, index) => {
         const isLast = index === messages.length - 1 && status !== "submitted"
-        const hasScrollAnchor =
-          isLast && messages.length > initialMessageCount.current
+        const hasScrollAnchor = isLast && messages.length > initialMessageCount.current
 
         return (
           <Message

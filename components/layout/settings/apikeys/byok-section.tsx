@@ -235,7 +235,7 @@ export function ByokSection() {
   }
 
   return (
-    <div>
+    <div className="max-md:h-[calc(100vh_-_150px)]">
       <h3 className="relative mb-2 inline-flex text-lg font-medium">
         Model Providers{" "}
         <span className="text-muted-foreground absolute top-0 -right-7 text-xs">

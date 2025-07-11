@@ -10,6 +10,8 @@ import { useEffect, useRef } from "react"
 import { Message } from "../chat/message"
 import { MultiConversationProps } from "./multi-conversation"
 import { ResponsesRow } from "./responses-row"
+import { cn } from "@/lib/utils"
+import { useContainerDistance } from "../chat/use-distance"
 
 export function MultiConversationContent({
   messageGroups,
@@ -18,6 +20,8 @@ export function MultiConversationContent({
   const { handleMessageCountChange } = useScrollContext()
   const { preferences } = useUserPreferences()
   const hasSidebar = preferences.layout === "sidebar"
+
+  const { containerRef, isOverflowing, checkContainerOverflow } = useContainerDistance()
 
   const previousGroupsLengthRef = useRef(messageGroups.length)
 
@@ -32,9 +36,21 @@ export function MultiConversationContent({
     previousGroupsLengthRef.current = currentLength
   }, [messageGroups, handleMessageCountChange])
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      checkContainerOverflow()
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [messageGroups, checkContainerOverflow])
+
   return (
     <ChatContainerContent
-      className={`flex w-full flex-col items-center ${hasSidebar ? "pt-22 md:pt-12" : "pt-22"}`}
+      ref={containerRef as React.RefObject<HTMLDivElement>}
+      className={cn(
+        "flex w-full flex-col items-center",
+        hasSidebar ? "pt-22 md:pt-12" : "pt-22"
+      )}
       style={{
         scrollbarGutter: "stable both-edges",
         scrollbarWidth: "none",
@@ -77,9 +93,11 @@ export function MultiConversationContent({
         )
       })}
 
-      <div className="fixed bottom-[140px] flex w-full max-w-3xl flex-1 items-end justify-end gap-4 px-4 pb-2 md:px-6">
-        <ScrollButton className="absolute top-[-50px] right-[30px]" />
-      </div>
+      {isOverflowing && (
+        <div className="fixed bottom-[140px] flex w-full max-w-3xl flex-1 items-end justify-end gap-4 px-4 pb-2 md:px-6">
+          <ScrollButton className="absolute top-[-50px] right-[30px]" />
+        </div>
+      )}
     </ChatContainerContent>
   )
 }

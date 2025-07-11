@@ -19,6 +19,7 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useCallback, useMemo, useState } from "react"
 import { formatDate, groupChatsByDate } from "./utils"
+import { useSidebar } from "../ui/sidebar"
 
 type DrawerHistoryProps = {
   chatHistory: Chats[]
@@ -42,6 +43,7 @@ export function DrawerHistory({
   const [editTitle, setEditTitle] = useState("")
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const params = useParams<{ chatId: string }>()
+  const { setOpenMobile } = useSidebar()
 
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open)
@@ -201,9 +203,8 @@ export function DrawerHistory({
             <div
               className="group flex items-center justify-between rounded-lg px-2 py-1.5"
               onClick={() => {
-                if (params.chatId === chat.id) {
-                  handleOpenChange(false)
-                }
+                handleOpenChange(false)
+                setOpenMobile(false)
               }}
             >
               <Link
@@ -264,6 +265,7 @@ export function DrawerHistory({
       handleCancelDelete,
       handleEdit,
       handleDelete,
+      setOpenMobile
     ]
   )
 

@@ -7,7 +7,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useChats } from "@/lib/chat-store/chats/provider"
@@ -99,9 +98,7 @@ export function AppSidebar() {
                 </div>
               }
               label={
-                <div
-                  className={`flex w-full items-center justify-between gap-2 duration-350 ${open ? "opacity-100" : "md:opacity-0"}`}
-                >
+                <div className={`flex w-full items-center justify-between gap-2 duration-350 ${open ? "opacity-100" : "md:opacity-0"}`}>
                   <span>Search</span>
                   <div className="text-muted-foreground ml-auto text-xs opacity-0 duration-150 group-hover/search:opacity-100">
                     ⌘+K

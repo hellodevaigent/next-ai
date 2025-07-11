@@ -6,7 +6,7 @@ import { useMessages } from "@/lib/chat-store/messages/provider"
 import { useChatSession } from "@/lib/chat-store/session/provider"
 import { cn } from "@/lib/utils"
 import { ListMagnifyingGlass } from "@phosphor-icons/react"
-import { usePathname, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { CommandHistory } from "./command-history"
 import { DrawerHistory } from "./drawer-history"
@@ -32,7 +32,7 @@ export function HistoryTrigger({
   const { deleteMessages } = useMessages()
   const [isOpen, setIsOpen] = useState(false)
   const { chatId } = useChatSession()
-
+  
   const handleSaveEdit = async (id: string, newTitle: string) => {
     await updateTitle(id, newTitle)
   }

@@ -115,7 +115,7 @@ export function ModelsSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-md:h-[calc(100vh_-_150px)]">
       <div>
         <h3 className="mb-2 text-lg font-medium">Models</h3>
         <p className="text-muted-foreground mb-4 text-sm">
@@ -212,7 +212,7 @@ export function ModelsSettings() {
         </p>
 
         {/* Search */}
-        <div className="mb-4">
+        <div className="mb-4 max-md:sticky max-md:top-[45px]">
           <input
             type="text"
             placeholder="Search models..."
