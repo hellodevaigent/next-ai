@@ -205,13 +205,14 @@ export function Chat() {
         "@container/main relative flex h-full flex-col items-center justify-end md:justify-center"
       )}
     >
+      
       <DialogAuth open={hasDialogAuth} setOpen={setHasDialogAuth} />
 
       <AnimatePresence initial={false} mode="popLayout">
         {showOnboarding ? (
           <motion.div
             key="onboarding"
-            className="absolute bottom-[60%] mx-auto max-w-[50rem] md:relative md:bottom-auto"
+            className="absolute bottom-[55%] mx-auto max-w-[50rem] md:relative md:bottom-auto md:-mt-[100px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

@@ -5,7 +5,6 @@ import { ConversationContent } from "./conversation-content"
 export type ConversationProps = {
   messages: MessageType[]
   status?: "streaming" | "ready" | "submitted" | "error"
-  loading?: boolean
   onEdit: (id: string, newText: string) => void
   onReload: () => void
 }
@@ -13,7 +12,6 @@ export type ConversationProps = {
 export function Conversation({
   messages,
   status = "ready",
-  loading,
   onEdit,
   onReload,
 }: ConversationProps) {
@@ -26,7 +24,6 @@ export function Conversation({
         <ConversationContent
           messages={messages}
           status={status}
-          loading={loading}
           onEdit={onEdit}
           onReload={onReload}
         />
