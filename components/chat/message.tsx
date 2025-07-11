@@ -9,7 +9,6 @@ type MessageProps = {
   id: string
   attachments?: MessageType["experimental_attachments"]
   isLast?: boolean
-  onDelete: (id: string) => void
   onEdit: (id: string, newText: string) => void
   onReload: () => void
   hasScrollAnchor?: boolean
@@ -18,6 +17,7 @@ type MessageProps = {
   className?: string
   hoverState?: boolean
   showHoverState?: boolean
+  showEditButton?: boolean
 }
 
 export function Message({
@@ -26,7 +26,6 @@ export function Message({
   id,
   attachments,
   isLast,
-  onDelete,
   onEdit,
   onReload,
   hasScrollAnchor,
@@ -34,7 +33,8 @@ export function Message({
   status,
   className,
   hoverState,
-  showHoverState
+  showHoverState,
+  showEditButton,
 }: MessageProps) {
   const [copied, setCopied] = useState(false)
 
@@ -51,8 +51,8 @@ export function Message({
         copyToClipboard={copyToClipboard}
         onReload={onReload}
         onEdit={onEdit}
-        onDelete={onDelete}
         id={id}
+        showEditButton={showEditButton}
         hasScrollAnchor={hasScrollAnchor}
         attachments={attachments}
         className={className}

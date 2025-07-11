@@ -34,9 +34,9 @@ export type MessageUserProps = {
   copyToClipboard: () => void
   onEdit: (id: string, newText: string) => void
   onReload: () => void
-  onDelete: (id: string) => void
   id: string
   className?: string
+  showEditButton?: boolean
 }
 
 export function MessageUser({
@@ -47,10 +47,11 @@ export function MessageUser({
   copyToClipboard,
   onEdit,
   onReload,
-  onDelete,
   id,
   className,
+  showEditButton,
 }: MessageUserProps) {
+  console.log('showEditButton', showEditButton)
   const [editInput, setEditInput] = useState(children)
   const [isEditing, setIsEditing] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -66,10 +67,6 @@ export function MessageUser({
     }
     onReload()
     setIsEditing(false)
-  }
-
-  const handleDelete = () => {
-    onDelete(id)
   }
 
   return (
@@ -191,31 +188,22 @@ export function MessageUser({
             )}
           </button>
         </MessageAction>
-        {/* @todo: add when ready */}
-        <MessageAction
-          tooltip={isEditing ? "Save" : "Edit"}
-          side="bottom"
-          delayDuration={0}
-        >
-          <button
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-transparent transition"
-            aria-label="Edit"
-            onClick={() => setIsEditing(!isEditing)}
-            type="button"
+        {showEditButton && (
+          <MessageAction
+            tooltip={isEditing ? "Save" : "Edit"}
+            side="bottom"
+            delayDuration={0}
           >
-            <PencilSimpleIcon className="size-4" />
-          </button>
-        </MessageAction>
-        <MessageAction tooltip="Delete" side="bottom">
-          <button
-            className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex size-7.5 items-center justify-center rounded-full bg-transparent transition"
-            aria-label="Delete"
-            onClick={handleDelete}
-            type="button"
-          >
-            <Trash className="size-4" />
-          </button>
-        </MessageAction>
+            <button
+              className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex size-7.5 items-center justify-center rounded-full bg-transparent transition"
+              aria-label="Edit"
+              onClick={() => setIsEditing(!isEditing)}
+              type="button"
+            >
+              <PencilSimpleIcon className="size-4" />
+            </button>
+          </MessageAction>
+        )}
       </MessageActions>
     </MessageContainer>
   )

@@ -88,7 +88,7 @@ export function ResponsesRow({ group, responses }: ResponsesRowProps) {
           </div>
         ))}
       </div>
-      {loaded && instanceRef.current && (
+      {loaded && instanceRef.current && instanceRef.current.track?.details?.slides && (
         <>
           <div className="absolute left-0 z-20 -translate-x-4 transition-all duration-200">
             <ArrowButton
@@ -102,7 +102,7 @@ export function ResponsesRow({ group, responses }: ResponsesRowProps) {
             <ArrowButton
               onClick={() => instanceRef.current?.next()}
               disabled={
-                currentSlide >= (instanceRef.current?.track?.details?.slides?.length ?? 1) - 1
+                currentSlide >= instanceRef.current.track.details.slides.length - 1
               }
             >
               <ChevronRightIcon className="size-4" />

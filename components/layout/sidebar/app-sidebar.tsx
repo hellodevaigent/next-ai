@@ -25,6 +25,7 @@ import { useMemo } from "react"
 import { HistoryTrigger } from "../../history/history-trigger"
 import { SidebarList } from "./sidebar-list"
 import { SidebarProject } from "./sidebar-project"
+import { SidebarSkeleton } from "@/components/skeleton/SidebarSkeleton"
 
 export function AppSidebar() {
   const isMobile = useBreakpoint(768)
@@ -113,7 +114,9 @@ export function AppSidebar() {
           </div>
           <div className="border-border space-y-0.25 border-t px-1.25 pt-1">
             {isLoading ? (
-              <div className="h-full" />
+              <div className="h-full">
+                <SidebarSkeleton />
+              </div>
             ) : hasChats ? (
               <ScrollArea className="flex h-[calc(100vh_-_350px)] [&>div>div]:!block [&>div>div]:space-y-3">
                 <div

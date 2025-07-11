@@ -1,23 +1,24 @@
 "use client"
 
-import dynamic from "next/dynamic"
 import { Conversation } from "@/components/chat/conversation"
 import { useModel } from "@/components/chat/use-model"
-import { useChatDraft } from "@/lib/hooks/use-chat-draft"
 import { useChats } from "@/lib/chat-store/chats/provider"
 import { useMessages } from "@/lib/chat-store/messages/provider"
 import { useChatSession } from "@/lib/chat-store/session/provider"
 import { SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
+import { useChatDraft } from "@/lib/hooks/use-chat-draft"
 import { useUserPreferences } from "@/lib/user-preference-store/provider"
 import { useUser } from "@/lib/user-store/provider"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "motion/react"
+import dynamic from "next/dynamic"
 import { redirect } from "next/navigation"
 import { useMemo, useState } from "react"
+import { ChatInput } from "../chat-input/chat-input"
+import { ConversationSkeleton } from "../skeleton/conversation"
 import { useChatCore } from "./use-chat-core"
 import { useChatOperations } from "./use-chat-operations"
 import { useFileUpload } from "./use-file-upload"
-import { ChatInput } from "../chat-input/chat-input"
 
 const FeedbackWidget = dynamic(
   () => import("./feedback-widget").then((mod) => mod.FeedbackWidget),
@@ -44,7 +45,11 @@ export function Chat() {
     [chatId, getChatById]
   )
 
-  const { messages: initialMessages, cacheAndAddMessage } = useMessages()
+  const {
+    messages: initialMessages,
+    cacheAndAddMessage,
+    isLoading: isLoadingInitialMessages,
+  } = useMessages()
   const { user } = useUser()
   const { preferences } = useUserPreferences()
   const { draftValue, clearDraft } = useChatDraft(chatId)
@@ -125,13 +130,14 @@ export function Chat() {
   // Memoize the conversation props to prevent unnecessary rerenders
   const conversationProps = useMemo(
     () => ({
+      loading: isLoadingInitialMessages,
       messages,
       status,
       onDelete: handleDelete,
       onEdit: handleEdit,
       onReload: handleReload,
     }),
-    [messages, status, handleDelete, handleEdit, handleReload]
+    [isLoadingInitialMessages, messages, status, handleDelete, handleEdit, handleReload]
   )
 
   // Memoize the chat input props
