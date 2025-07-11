@@ -5,19 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
-// import {
-//   Drawer,
-//   DrawerContent,
-//   DrawerDescription,
-//   DrawerHeader,
-//   DrawerTitle,
-// } from "@/components/ui/drawer"
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -188,64 +181,38 @@ function Sidebar({
 
   if (isMobile) {
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-        <SheetContent
+      <Drawer 
+        open={openMobile} 
+        onOpenChange={setOpenMobile}
+        direction={side}
+      >
+        <DrawerContent
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+          className={cn(
+            "bg-sidebar text-sidebar-foreground border-0 p-0 rounded-r-2xl",
+            side === "left" 
+              ? "data-[vaul-drawer-direction=left]:w-[var(--sidebar-width)] data-[vaul-drawer-direction=left]:max-w-none" 
+              : "data-[vaul-drawer-direction=right]:w-[var(--sidebar-width)] data-[vaul-drawer-direction=right]:max-w-none"
+          )}
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
             } as React.CSSProperties
           }
-          side={side}
-          onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <SheetHeader className="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
-          </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
-        </SheetContent>
-      </Sheet>
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>Sidebar</DrawerTitle>
+            <DrawerDescription>Displays the mobile sidebar.</DrawerDescription>
+          </DrawerHeader>
+          <div className="flex h-full w-full flex-col overflow-hidden">
+            {children}
+          </div>
+        </DrawerContent>
+      </Drawer>
     )
   }
-
-  // if (isMobile) {
-  //   return (
-  //     <Drawer 
-  //       open={openMobile} 
-  //       onOpenChange={setOpenMobile}
-  //       direction={side}
-  //     >
-  //       <DrawerContent
-  //         data-sidebar="sidebar"
-  //         data-slot="sidebar"
-  //         data-mobile="true"
-  //         className={cn(
-  //           "bg-sidebar text-sidebar-foreground border-0 p-0 rounded-r-2xl",
-  //           side === "left" 
-  //             ? "data-[vaul-drawer-direction=left]:w-[var(--sidebar-width)] data-[vaul-drawer-direction=left]:max-w-none" 
-  //             : "data-[vaul-drawer-direction=right]:w-[var(--sidebar-width)] data-[vaul-drawer-direction=right]:max-w-none"
-  //         )}
-  //         style={
-  //           {
-  //             "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-  //           } as React.CSSProperties
-  //         }
-  //       >
-  //         <DrawerHeader className="sr-only">
-  //           <DrawerTitle>Sidebar</DrawerTitle>
-  //           <DrawerDescription>Displays the mobile sidebar.</DrawerDescription>
-  //         </DrawerHeader>
-  //         <div className="flex h-full w-full flex-col overflow-hidden">
-  //           {children}
-  //         </div>
-  //       </DrawerContent>
-  //     </Drawer>
-  //   )
-  // }
 
   return (
     <div
