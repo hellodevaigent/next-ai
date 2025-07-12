@@ -54,7 +54,6 @@ export function ResponseCard({ response, group }: ResponseCardProps) {
               ]
             }
             attachments={response.message.experimental_attachments}
-            onDelete={() => group.onDelete(response.model, response.message.id)}
             onEdit={(id, newText) => group.onEdit(response.model, id, newText)}
             onReload={() => group.onReload(response.model)}
             status={response.isLoading ? "streaming" : "ready"}
