@@ -42,7 +42,7 @@ export function Header() {
             {isLoading ? (
               <Skeleton className="w-32 h-4" />
             ) : (
-              <h1 className="w-38 truncate text-nowrap capitalize font-semibold md:ml-3">
+              <h1 className="w-38 truncate text-nowrap capitalize md:ml-3">
                 {title}
               </h1>
             )}

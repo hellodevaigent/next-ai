@@ -11,6 +11,7 @@ import { useChats } from "@/lib/chat-store/chats/provider"
 import { useMessages } from "@/lib/chat-store/messages/provider"
 import { MESSAGE_MAX_LENGTH, SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
 import { Attachment } from "@/lib/file-handling"
+import { useTitle } from "@/lib/hooks/use-title"
 import { API_ROUTE_CHAT } from "@/lib/routes"
 import { useUser } from "@/lib/user-store/provider"
 import { cn } from "@/lib/utils"
@@ -61,6 +62,8 @@ export function ProjectView({ projectId }: ProjectViewProps) {
       return response.json()
     },
   })
+
+  useTitle(null, `PROJECT • ${project?.name || "Untitled"}`);
 
   // Get chats from the chat store and filter for this project
   const { chats: allChats } = useChats()
