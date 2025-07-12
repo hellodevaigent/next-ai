@@ -68,7 +68,6 @@ export function MultiConversationContent({
               id={group.userMessage.id}
               variant="user"
               attachments={group.userMessage.experimental_attachments}
-              onDelete={() => {}}
               onEdit={() => {}}
               onReload={() => {}}
               parts={
