@@ -38,11 +38,11 @@ export function Header() {
                 <SidebarIcon open={open} className="size-4" />
               </button>
             )}
-            <span className="text-muted-foreground/30 w-4 min-w-4 select-none text-center text-lg md:hidden md:ml-3">/</span>
+            <span className="text-muted-foreground/30 w-4 min-w-4 select-none text-center text-lg md:hidden">/</span>
             {isLoading ? (
               <Skeleton className="w-32 h-4" />
             ) : (
-              <h1 className="w-38 truncate text-nowrap capitalize font-semibold">
+              <h1 className="w-38 truncate text-nowrap capitalize font-semibold md:ml-3">
                 {title}
               </h1>
             )}

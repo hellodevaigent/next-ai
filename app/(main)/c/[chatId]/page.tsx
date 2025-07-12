@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
-import { ChatContainer } from "@/components/chat/chat-container"
 import { generateChatMetadata } from "@/lib/metadata"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { Chat } from "@/components/chat/chat"
 
 type Props = {
   params: Promise<{ chatId: string }>
@@ -26,5 +26,5 @@ export default async function ChatPage() {
     }
   }
 
-  return <ChatContainer />;
+  return <Chat />;
 }
