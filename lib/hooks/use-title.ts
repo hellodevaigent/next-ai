@@ -1,21 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTitleStore } from "@/lib/title-store";
 import { getChat } from "../chat-store/chats/api";
 
-export function useTitle(chatId: string | null) {
-  const { setTitle } = useTitleStore();
-  const [isLoading, setIsLoading] = useState(false);
+export function useTitle(chatId?: string | null, title?: string) {
+  const { setTitle, setLoading } = useTitleStore();
 
   useEffect(() => {
+    if (title) {
+      setTitle(title);
+      return;
+    }
+
     if (!chatId) {
       setTitle(null);
+      setLoading(false);
       return;
     }
 
     const fetchTitle = async () => {
-      setIsLoading(true);
+      setLoading(true);
       
       try {
         const chat = await getChat(chatId);
@@ -24,17 +29,19 @@ export function useTitle(chatId: string | null) {
         console.error("Failed to fetch chat title:", error);
         setTitle(null);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchTitle();
-  }, [chatId, setTitle]);
+  }, [chatId ?? null, title, setTitle, setLoading]);
 
-  // Cleanup title when component unmounts
   useEffect(() => {
-    return () => setTitle(null);
-  }, [setTitle]);
+    return () => {
+      setTitle(null);
+      setLoading(false);
+    };
+  }, [setTitle, setLoading]);
 
-  return { isLoading };
+  return null;
 }

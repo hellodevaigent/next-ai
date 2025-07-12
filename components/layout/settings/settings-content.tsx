@@ -24,10 +24,12 @@ import { ModelsSettings } from "./models/models-settings"
 import { useUser } from "@/lib/user-store/provider"
 import { useRouter } from "next/navigation"
 import { LoaderScreen } from "@/components/common/Loader"
+import { useTitle } from "@/lib/hooks/use-title"
 
 type TabType = "general" | "appearance" | "apikeys" | "models" | "connections"
 
 export function SettingsContent() {
+  useTitle(null, "Settings");
   const { user } = useUser()
   const router = useRouter()
 
@@ -120,10 +122,7 @@ export function SettingsContent() {
       value={activeTab}
       onValueChange={(value) => setActiveTab(value as TabType)}
     >
-      <div className="bg-background sticky top-0 z-10 flex items-center border-b">
-        <h1 className="hidden py-3 pr-4 pl-3 font-semibold uppercase md:block">
-          Settings
-        </h1>
+      <div className="bg-background sticky top-0 z-10 flex items-center border-y">
         <div
           ref={tabsRef}
           className="relative flex w-full items-center justify-start gap-1 px-2 py-3"

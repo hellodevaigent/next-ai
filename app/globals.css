@@ -64,7 +64,7 @@
   --spacing-scroll-area: calc(
     -1 * (var(--spacing-input-area) + var(--spacing-app-header))
   );
-  --spacing-scroll-anchor-offset: 120px;
+  --spacing-scroll-anchor-offset: 100px;
   --spacing-scroll-anchor: calc(
     var(--spacing-scroll-area) - var(--spacing-scroll-anchor-offset) + 100dvh
   );
