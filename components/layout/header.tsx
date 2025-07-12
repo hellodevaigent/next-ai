@@ -11,6 +11,7 @@ import Link from "next/link"
 import SidebarIcon from "../icons/sidebar-icon"
 import { DialogConnectWallet } from "./dialog-connect-wallet"
 import { DialogPublish } from "./dialog-publish"
+import { Skeleton } from "../skeleton/Skeleton"
 
 export function Header() {
   const isMobile = useBreakpoint(768)
@@ -37,9 +38,13 @@ export function Header() {
                 <SidebarIcon open={open} className="size-4" />
               </button>
             )}
-            <h1 className="ml-2 w-38 truncate text-nowrap capitalize md:ml-4">
-              {title}
-            </h1>
+            {!title ? (
+              <h1 className="ml-2 w-38 truncate text-nowrap capitalize md:ml-4">
+                {title}
+              </h1>
+            ) : (
+              <Skeleton className="ml-2 w-38 h-4 md:ml-4" />
+            )}
           </div>
           {!isLoggedIn ? (
             <div className="pointer-events-auto">
