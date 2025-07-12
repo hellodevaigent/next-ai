@@ -7,18 +7,19 @@ import { useMessages } from "@/lib/chat-store/messages/provider"
 import { useChatSession } from "@/lib/chat-store/session/provider"
 import { SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
 import { useChatDraft } from "@/lib/hooks/use-chat-draft"
+import { useTitle } from "@/lib/hooks/use-title"
 import { useUserPreferences } from "@/lib/user-preference-store/provider"
 import { useUser } from "@/lib/user-store/provider"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "motion/react"
 import dynamic from "next/dynamic"
 import { redirect } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { ChatInput } from "../chat-input/chat-input"
-import { ConversationSkeleton } from "../skeleton/conversation"
 import { useChatCore } from "./use-chat-core"
 import { useChatOperations } from "./use-chat-operations"
 import { useFileUpload } from "./use-file-upload"
+import { useChatLoading } from "@/lib/hooks/use-chat-loading"
 
 const FeedbackWidget = dynamic(
   () => import("./feedback-widget").then((mod) => mod.FeedbackWidget),
@@ -39,6 +40,8 @@ export function Chat() {
     bumpChat,
     isLoading: isChatsLoading,
   } = useChats()
+
+  useTitle(chatId)
 
   const currentChat = useMemo(
     () => (chatId ? getChatById(chatId) : null),
@@ -79,6 +82,12 @@ export function Chat() {
   const systemPrompt = useMemo(
     () => user?.system_prompt || SYSTEM_PROMPT_DEFAULT,
     [user?.system_prompt]
+  )
+
+  const { shouldShowLoading } = useChatLoading(
+    chatId,
+    isLoadingInitialMessages,
+    initialMessages.length > 0
   )
 
   // Chat operations (utils + handlers) - created first
@@ -130,14 +139,21 @@ export function Chat() {
   // Memoize the conversation props to prevent unnecessary rerenders
   const conversationProps = useMemo(
     () => ({
-      loading: isLoadingInitialMessages,
+      isLoading: shouldShowLoading,
       messages,
       status,
       onDelete: handleDelete,
       onEdit: handleEdit,
       onReload: handleReload,
     }),
-    [isLoadingInitialMessages, messages, status, handleDelete, handleEdit, handleReload]
+    [
+      isLoadingInitialMessages,
+      messages,
+      status,
+      handleDelete,
+      handleEdit,
+      handleReload,
+    ]
   )
 
   // Memoize the chat input props
@@ -202,17 +218,17 @@ export function Chat() {
   return (
     <div
       className={cn(
-        "@container/main relative flex h-full flex-col items-center justify-end md:justify-center"
+        "group/scrollbar @container/main relative flex flex-1 flex-col items-center hidden-scrollbar",
+        "md:border-border md:ml-[11px] md:right-[11px] md:justify-center md:rounded-tr-xl md:border-y md:border-r"
       )}
     >
-      
       <DialogAuth open={hasDialogAuth} setOpen={setHasDialogAuth} />
 
       <AnimatePresence initial={false} mode="popLayout">
         {showOnboarding ? (
           <motion.div
             key="onboarding"
-            className="absolute bottom-[55%] mx-auto max-w-[50rem] md:relative md:bottom-auto md:-mt-[100px]"
+            // className="absolute bottom-[55%] mx-auto max-w-[50rem] md:relative md:bottom-auto md:-mt-[100px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -247,8 +263,6 @@ export function Chat() {
       >
         <ChatInput {...chatInputProps} />
       </motion.div>
-
-      <FeedbackWidget authUserId={user?.id} />
     </div>
   )
 }

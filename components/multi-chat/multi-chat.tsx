@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { useCallback, useMemo, useState } from "react"
 import { MultiChatInput } from "./multi-chat-input"
 import { useMultiChat } from "./use-multi-chat"
+import { useChatLoading } from "@/lib/hooks/use-chat-loading"
 
 type GroupedMessage = {
   userMessage: MessageType
@@ -39,9 +40,15 @@ export function MultiChat() {
   const { user } = useUser()
   const { models } = useModel()
   const { chatId } = useChatSession()
-  const { messages: persistedMessages, isLoading: messagesLoading } =
-    useMessages()
+  const { messages: persistedMessages, isLoading: messagesLoading } = useMessages()
   const { createNewChat } = useChats()
+
+  // Add loading logic
+  const { shouldShowLoading } = useChatLoading(
+    chatId,
+    messagesLoading,
+    persistedMessages.length > 0
+  )
 
   const availableModels = useMemo(() => {
     return models.map((model) => ({
@@ -327,7 +334,11 @@ export function MultiChat() {
     [modelChats, selectedModelIds]
   )
 
-  const conversationProps = useMemo(() => ({ messageGroups }), [messageGroups])
+  // Update conversation props to use shouldShowLoading
+  const conversationProps = useMemo(() => ({ 
+    messageGroups,
+    isLoading: shouldShowLoading // Add this if MultiModelConversation supports it
+  }), [messageGroups, shouldShowLoading])
 
   const inputProps = useMemo(
     () => ({
@@ -364,14 +375,15 @@ export function MultiChat() {
   return (
     <div
       className={cn(
-        "@container/main relative flex h-full flex-col items-center justify-end md:justify-center"
+        "group/scrollbar @container/main relative flex flex-1 flex-col items-center hidden-scrollbar",
+        "md:border-border md:ml-[11px] md:right-[11px] md:justify-center md:rounded-tr-xl md:border-y md:border-r"
       )}
     >
       <AnimatePresence initial={false} mode="popLayout">
         {showOnboarding ? (
           <motion.div
             key="onboarding"
-            className="absolute bottom-[60%] mx-auto max-w-[50rem] md:relative md:bottom-auto"
+            // className="absolute bottom-[60%] mx-auto max-w-[50rem] md:relative md:bottom-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -380,7 +392,7 @@ export function MultiChat() {
             transition={{ layout: { duration: 0 } }}
           >
             <h1 className="mb-6 text-3xl font-medium tracking-tight">
-              What's on your mind?
+              What&apos;s on your mind?
             </h1>
           </motion.div>
         ) : (

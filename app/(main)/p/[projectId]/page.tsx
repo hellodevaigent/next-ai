@@ -1,14 +1,22 @@
-import { ProjectView } from "@/app/(main)/p/[projectId]/project-view"
+import { ProjectView } from "@/components/project/project-view"
+import { generateProjectMetadata } from "@/lib/metadata"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/server"
+import { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 type Props = {
   params: Promise<{ projectId: string }>
 }
 
-export default async function Page({ params }: Props) {
-  const { projectId } = await params
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
+  return generateProjectMetadata({ params })
+}
+
+export default async function ProjectPage({ params }: Props) {
+  const { projectId } = await params;
 
   if (isSupabaseEnabled) {
     const supabase = await createClient()

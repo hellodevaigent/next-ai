@@ -5,15 +5,20 @@ import { useEffect, useMemo, useRef } from "react"
 import { ConversationProps } from "./conversation"
 import { Message } from "./message"
 import { useContainerDistance } from "./use-distance"
+import { ConversationSkeleton } from "../skeleton/conversation"
 
 export function ConversationContent({
   messages,
   status = "ready",
   onEdit,
   onReload,
+  isLoading,
 }: ConversationProps) {
-  const { containerRef, isOverflowing, checkContainerOverflow } =
-    useContainerDistance()
+  const { 
+    containerRef, 
+    isOverflowing, 
+    checkContainerOverflow 
+  } = useContainerDistance()
 
   const initialMessageCount = useRef(messages.length)
 
@@ -38,49 +43,55 @@ export function ConversationContent({
   return (
     <ChatContainerContent
       ref={containerRef as React.RefObject<HTMLDivElement>}
-      className="flex w-full flex-col items-center pt-12 pb-4"
+      className="flex mx-auto w-full max-w-3xl flex-col items-center pt-12 pb-4"
       style={{
         scrollbarGutter: "stable both-edges",
         scrollbarWidth: "none",
       }}
     >
-      {messages?.map((message, index) => {
-        const isLast = index === messages.length - 1 && status !== "submitted"
-        const hasScrollAnchor =
-          isLast && messages.length > initialMessageCount.current
-        const showEditButton =
-          message.role === "user" && index === lastUserMessageIndex
-
-        return (
-          <Message
-            key={message.id}
-            id={message.id}
-            variant={message.role}
-            attachments={message.experimental_attachments}
-            isLast={isLast}
-            onEdit={onEdit}
-            onReload={onReload}
-            hasScrollAnchor={hasScrollAnchor}
-            parts={message.parts}
-            status={status}
-            showHoverState={false}
-            showEditButton={showEditButton}
-          >
-            {message.content}
-          </Message>
-        )
-      })}
-      {status === "submitted" &&
-        messages.length > 0 &&
-        messages[messages.length - 1].role === "user" && (
-          <div className="group min-h-scroll-anchor flex w-full max-w-3xl flex-col items-start gap-2 px-4 pb-2 md:px-6">
-            <Loader />
-          </div>
-        )}
-      {isOverflowing && (
-        <div className="fixed bottom-[140px] flex w-full max-w-3xl flex-1 items-end justify-end gap-4 px-4 pb-2 md:px-6">
-          <ScrollButton className="absolute top-[-50px] right-[30px]" />
-        </div>
+      {isLoading ? (
+        <ConversationSkeleton />
+      ) : (
+        <>
+          {messages?.map((message, index) => {
+            const isLast = index === messages.length - 1 && status !== "submitted"
+            const hasScrollAnchor =
+              isLast && messages.length > initialMessageCount.current
+            const showEditButton =
+              message.role === "user" && index === lastUserMessageIndex
+    
+            return (
+              <Message
+                key={message.id}
+                id={message.id}
+                variant={message.role}
+                attachments={message.experimental_attachments}
+                isLast={isLast}
+                onEdit={onEdit}
+                onReload={onReload}
+                hasScrollAnchor={hasScrollAnchor}
+                parts={message.parts}
+                status={status}
+                showHoverState={false}
+                showEditButton={showEditButton}
+              >
+                {message.content}
+              </Message>
+            )
+          })}
+          {status === "submitted" &&
+            messages.length > 0 &&
+            messages[messages.length - 1].role === "user" && (
+              <div className="group min-h-scroll-anchor flex w-full max-w-3xl flex-col items-start gap-2 px-4 pb-2 md:px-6">
+                <Loader />
+              </div>
+            )}
+          {isOverflowing && (
+            <div className="fixed bottom-[140px] flex w-full max-w-3xl flex-1 items-end justify-end gap-4 px-4 pb-2 md:px-6">
+              <ScrollButton className="absolute top-[-50px] right-[30px]" />
+            </div>
+          )}
+        </>
       )}
     </ChatContainerContent>
   )

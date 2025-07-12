@@ -44,27 +44,28 @@ function ChatContainerRoot({
   className,
   ...props
 }: ChatContainerRootProps) {
-  const { 
-    containerRef, 
-    isAtBottom, 
-    scrollToBottom, 
-    shouldAutoScroll, 
+  const {
+    containerRef,
+    isAtBottom,
+    scrollToBottom,
+    shouldAutoScroll,
     forceScrollToNewMessage,
-    handleMessageCountChange 
+    handleMessageCountChange,
   } = useScrollToBottom()
 
   return (
-    
-    <ScrollContext.Provider value={{ 
-      isAtBottom, 
-      scrollToBottom, 
-      shouldAutoScroll, 
-      forceScrollToNewMessage,
-      handleMessageCountChange 
-    }}>
+    <ScrollContext.Provider
+      value={{
+        isAtBottom,
+        scrollToBottom,
+        shouldAutoScroll,
+        forceScrollToNewMessage,
+        handleMessageCountChange,
+      }}
+    >
       <div
         ref={containerRef}
-        className={cn("flex hidden-scrollbar", className)}
+        className={cn("hidden-scrollbar flex w-full h-full", className)}
         role="log"
         {...props}
       >
@@ -72,7 +73,7 @@ function ChatContainerRoot({
       </div>
       <CustomScrollbar
         containerRef={containerRef}
-        className="!right-[2.5px]"
+        className="invisible !right-[1.5px] group-hover/scrollbar:visible"
       />
     </ScrollContext.Provider>
   )
@@ -84,11 +85,7 @@ function ChatContainerContent({
   ...props
 }: ChatContainerContentProps) {
   return (
-    <div
-
-      className={cn("flex w-full flex-col", className)}
-      {...props}
-    >
+    <div className={cn("flex w-full flex-col", className)} {...props}>
       {children}
     </div>
   )

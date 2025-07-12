@@ -1,7 +1,7 @@
 "use client"
 
 import { toast } from "@/components/ui/toast"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { MODEL_DEFAULT, SYSTEM_PROMPT_DEFAULT } from "../../config"
 import type { Chats } from "../types"
 import {
@@ -36,6 +36,8 @@ interface ChatsContextType {
   getChatById: (id: string) => Chats | undefined
   updateChatModel: (id: string, model: string) => Promise<void>
   bumpChat: (id: string) => Promise<void>
+  markChatAsLoaded: (chatId: string) => void
+  isChatLoaded: (chatId: string) => boolean
 }
 const ChatsContext = createContext<ChatsContextType | null>(null)
 
@@ -54,6 +56,7 @@ export function ChatsProvider({
 }) {
   const [isLoading, setIsLoading] = useState(true)
   const [chats, setChats] = useState<Chats[]>([])
+  const [loadedChats, setLoadedChats] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!userId) return
@@ -192,6 +195,18 @@ export function ChatsProvider({
     setChats(sorted)
   }
 
+  const markChatAsLoaded = useCallback((chatId: string) => {
+    setLoadedChats(prev => new Set(prev).add(chatId))
+  }, [])
+
+  const isChatLoaded = useCallback((chatId: string) => {
+  return loadedChats.has(chatId)
+}, [loadedChats])
+
+  useEffect(() => {
+    setLoadedChats(new Set())
+  }, [userId])
+
   return (
     <ChatsContext.Provider
       value={{
@@ -206,6 +221,8 @@ export function ChatsProvider({
         updateChatModel,
         bumpChat,
         isLoading,
+        markChatAsLoaded,
+        isChatLoaded,
       }}
     >
       {children}

@@ -1,13 +1,13 @@
-import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
-import useClickOutside from "@/lib/hooks/use-click-outside"
+import { useSidebar } from "@/components/ui/sidebar"
 import { useChats } from "@/lib/chat-store/chats/provider"
 import { Chat } from "@/lib/chat-store/types"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import useClickOutside from "@/lib/hooks/use-click-outside"
 import { cn } from "@/lib/utils"
 import { Check, X } from "@phosphor-icons/react"
 import Link from "next/link"
 import { useCallback, useMemo, useRef, useState } from "react"
 import { SidebarItemMenu } from "./sidebar-item-menu"
-import { useSidebar } from "@/components/ui/sidebar"
 
 type SidebarItemProps = {
   chat: Chat
@@ -131,7 +131,7 @@ export function SidebarItem({ chat, currentChatId }: SidebarItemProps) {
     () =>
       cn(
         "hover:bg-accent/80 hover:text-foreground group/chat relative w-full rounded-md transition-colors",
-        isActive && "bg-accent hover:bg-accent text-foreground"
+        isActive && "bg-accent/50 hover:bg-accent/50 text-foreground"
       ),
     [isActive]
   )
@@ -139,10 +139,13 @@ export function SidebarItem({ chat, currentChatId }: SidebarItemProps) {
   const menuClassName = useMemo(
     () =>
       cn(
-        "absolute top-0 right-1 flex h-full items-center justify-center opacity-0 transition-opacity group-hover/chat:opacity-100",
-        isMobile && "opacity-100 group-hover/chat:opacity-100"
+        "absolute top-0 right-1 flex h-full items-center justify-center transition-opacity",
+        isMobile && "opacity-100 group-hover/chat:opacity-100",
+        isActive
+          ? "opacity-100 group-hover/chat:opacity-100"
+          : "opacity-0 group-hover/chat:opacity-100"
       ),
-    [isMobile]
+    [isMobile, isActive]
   )
 
   return (
@@ -187,7 +190,7 @@ export function SidebarItem({ chat, currentChatId }: SidebarItemProps) {
             onClick={handleLinkClick}
           >
             <div
-              className="text-primary relative line-clamp-1 mask-r-from-80% mask-r-to-85% px-2 py-2 text-sm text-nowrap text-ellipsis whitespace-nowrap"
+              className="text-primary relative line-clamp-1 mask-r-from-80% mask-r-to-85% px-2 py-2 text-sm text-nowrap text-ellipsis whitespace-nowrap capitalize"
               title={displayTitle}
             >
               {displayTitle}

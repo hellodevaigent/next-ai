@@ -7,6 +7,7 @@ export type ConversationProps = {
   status?: "streaming" | "ready" | "submitted" | "error"
   onEdit: (id: string, newText: string) => void
   onReload: () => void
+  isLoading?: boolean
 }
 
 export function Conversation({
@@ -14,20 +15,20 @@ export function Conversation({
   status = "ready",
   onEdit,
   onReload,
+  isLoading
 }: ConversationProps) {
   if (!messages || messages.length === 0)
     return <div className="h-full w-full"></div>
 
   return (
-    <div className="relative flex h-full w-full flex-col items-center overflow-hidden">
-      <ChatContainerRoot className="relative w-full">
-        <ConversationContent
-          messages={messages}
-          status={status}
-          onEdit={onEdit}
-          onReload={onReload}
-        />
-      </ChatContainerRoot>
-    </div>
+    <ChatContainerRoot>
+      <ConversationContent
+        messages={messages}
+        status={status}
+        onEdit={onEdit}
+        onReload={onReload}
+        isLoading={isLoading}
+      />
+    </ChatContainerRoot>
   )
 }

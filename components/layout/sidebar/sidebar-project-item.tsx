@@ -239,7 +239,7 @@ export function SidebarProjectItem({ project }: SidebarProjectItemProps) {
     >
       {isEditing ? (
         <div className="bg-accent flex items-center rounded-md py-1 pr-1 pl-2">
-          <FolderIcon size={20} className="text-primary mr-2 flex-shrink-0" />
+          <FolderIcon size={18} className="text-primary mr-2 flex-shrink-0" />
           <input
             ref={inputRef}
             value={editName}
@@ -274,11 +274,11 @@ export function SidebarProjectItem({ project }: SidebarProjectItemProps) {
             onClick={handleLinkClick}
           >
             <div
-              className="text-primary relative line-clamp-1 flex w-full items-center text-nowrap gap-2 mask-r-from-80% mask-r-to-85% px-2 py-2 text-sm text-ellipsis whitespace-nowrap"
+              className="text-primary relative line-clamp-1 flex w-full items-center text-nowrap gap-2 mask-r-from-80% mask-r-to-85% p-2 text-sm text-ellipsis whitespace-nowrap"
               title={displayName}
             >
               <div>
-                <FolderIcon size={20} />
+                <FolderIcon size={18} />
               </div>
               <span className={`duration-350 ${sidebarOpen ? 'opacity-100' : 'md:opacity-0'}`}>
                 {displayName}

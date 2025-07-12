@@ -13,6 +13,7 @@ import { DotsThree, PencilSimple, Trash } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { DialogDeleteChat } from "./dialog-delete-chat"
+import { cn } from "@/lib/utils"
 
 type SidebarItemMenuProps = {
   chat: Chat
@@ -26,6 +27,7 @@ export function SidebarItemMenu({
   onMenuOpenChange,
 }: SidebarItemMenuProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
   const { deleteMessages } = useMessages()
   const { deleteChat } = useChats()
@@ -37,22 +39,30 @@ export function SidebarItemMenu({
     await deleteChat(chat.id, chatId!, () => router.push("/"))
   }
 
+  const handleMenuOpenChange = (open: boolean) => {
+    setIsMenuOpen(open)
+    onMenuOpenChange?.(open)
+  }
+
   return (
     <>
       <DropdownMenu
-        // shadcn/ui / radix pointer-events-none issue
+        open={isMenuOpen}
         modal={isMobile ? true : false}
-        onOpenChange={onMenuOpenChange}
+        onOpenChange={handleMenuOpenChange}
       >
         <DropdownMenuTrigger asChild>
           <button
-            className="hover:bg-secondary flex size-7 items-center justify-center rounded-md p-1 transition-colors duration-150"
+            className={cn(
+              "flex size-7 items-center justify-center rounded-md p-1 transition-colors duration-150 cursor-pointer",
+              isMenuOpen ? "bg-secondary" : "hover:bg-secondary"
+            )}
             onClick={(e) => e.stopPropagation()}
           >
             <DotsThree size={18} className="text-primary" weight="bold" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuContent align="end" className="w-34">
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={(e) => {
@@ -65,7 +75,7 @@ export function SidebarItemMenu({
             Rename
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-destructive"
+            className="text-destructive cursor-pointer"
             variant="destructive"
             onClick={(e) => {
               e.preventDefault()

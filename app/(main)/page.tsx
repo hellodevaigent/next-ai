@@ -5,7 +5,7 @@ import { metadata as meta } from "@/lib/metadata";
 export const metadata: Metadata = meta.home;
 export const dynamic = "force-dynamic"
 
-export default function Home() {
+export default function HomePage() {
   return (
     <ChatContainer />
   )

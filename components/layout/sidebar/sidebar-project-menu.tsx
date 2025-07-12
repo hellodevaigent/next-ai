@@ -41,7 +41,7 @@ export function SidebarProjectMenu({
       >
         <DropdownMenuTrigger asChild>
           <button
-            className="hover:bg-secondary flex size-7 items-center justify-center rounded-md p-1 transition-colors duration-150"
+            className="hover:bg-secondary flex size-7 items-center justify-center rounded-md p-1 transition-colors duration-150 cursor-pointer"
             onClick={(e) => e.stopPropagation()}
           >
             <DotsThree size={18} className="text-primary" weight="bold" />

@@ -3,8 +3,10 @@ import type { Metadata } from "next"
 import { getUserProfile } from "@/lib/user/api"
 import { Geist, Geist_Mono } from "next/font/google"
 import { AppProviders } from "./providers"
+import { metadata as meta } from "@/lib/metadata"
 import "./globals.css"
 import 'keen-slider/keen-slider.min.css'
+import { APP_NAME } from "@/lib/config"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +17,8 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 })
+
+export const metadata: Metadata = meta.home;
 
 export default async function RootLayout({
   children,
@@ -33,6 +37,10 @@ export default async function RootLayout({
           data-website-id="42e5b68c-5478-41a6-bc68-088d029cee52"
         />
       )}
+      <head>
+        <title>{APP_NAME}</title>
+      </head>
+
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AppProviders userProfile={userProfile}>{children}</AppProviders>
       </body>

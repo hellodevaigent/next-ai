@@ -373,7 +373,8 @@ export function ProjectView({ projectId }: ProjectViewProps) {
   return (
     <div
       className={cn(
-        "relative flex h-full w-full flex-col items-center overflow-x-hidden overflow-y-auto",
+        "@container/main relative flex flex-1 flex-col items-center overflow-hidden",
+        "md:border-border md:right-[11px] md:ml-[11px] md:justify-center md:rounded-tr-xl md:border-y md:border-r",
         showOnboarding && chats.length === 0
           ? "justify-center pt-0"
           : showOnboarding && chats.length > 0
@@ -425,7 +426,7 @@ export function ProjectView({ projectId }: ProjectViewProps) {
       </motion.div>
 
       {showOnboarding && chats.length > 0 ? (
-        <div className="mx-auto w-full max-w-3xl px-4 pt-6 pb-20">
+        <div className="mx-auto w-full max-w-3xl px-4 pt-6 overflow-y-auto">
           <h2 className="text-muted-foreground mb-3 text-sm font-medium">
             Recent chats
           </h2>

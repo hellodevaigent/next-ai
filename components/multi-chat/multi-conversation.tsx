@@ -21,10 +21,12 @@ export type GroupedMessage = {
 export type MultiConversationProps = {
   messageGroups: GroupedMessage[]
   groupResponses?: Record<number, GroupedMessage["responses"]>
+  isLoading?: boolean
 }
 
 export function MultiModelConversation({
   messageGroups,
+  isLoading
 }: MultiConversationProps) {
   const [groupResponses, setGroupResponses] = useState<
     Record<number, GroupedMessage["responses"]>
@@ -72,10 +74,11 @@ export function MultiModelConversation({
         }
       `}</style>
 
-      <ChatContainerRoot className="relative w-full">
+      <ChatContainerRoot>
         <MultiConversationContent
           messageGroups={messageGroups}
           groupResponses={groupResponses}
+          isLoading={isLoading}
         />
       </ChatContainerRoot>
     </div>
