@@ -222,7 +222,7 @@ export function Chat() {
         {showOnboarding ? (
           <motion.div
             key="onboarding"
-            // className="absolute bottom-[55%] mx-auto max-w-[50rem] md:relative md:bottom-auto md:-mt-[100px]"
+            className="flex items-center max-md:h-full md:-mt-[150px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
