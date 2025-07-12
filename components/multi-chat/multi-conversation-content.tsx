@@ -5,12 +5,10 @@ import {
   useScrollContext,
 } from "@/components/prompt-kit/chat-container"
 import { ScrollButton } from "@/components/prompt-kit/scroll-button"
-import { useUserPreferences } from "@/lib/user-preference-store/provider"
 import { useEffect, useRef } from "react"
 import { Message } from "../chat/message"
 import { MultiConversationProps } from "./multi-conversation"
 import { ResponsesRow } from "./responses-row"
-import { cn } from "@/lib/utils"
 import { useContainerDistance } from "../chat/use-distance"
 
 export function MultiConversationContent({
@@ -18,8 +16,6 @@ export function MultiConversationContent({
   groupResponses,
 }: MultiConversationProps) {
   const { handleMessageCountChange } = useScrollContext()
-  const { preferences } = useUserPreferences()
-  const hasSidebar = preferences.layout === "sidebar"
 
   const { containerRef, isOverflowing, checkContainerOverflow } = useContainerDistance()
 
@@ -47,10 +43,7 @@ export function MultiConversationContent({
   return (
     <ChatContainerContent
       ref={containerRef as React.RefObject<HTMLDivElement>}
-      className={cn(
-        "flex w-full flex-col items-center",
-        hasSidebar ? "pt-22 md:pt-12" : "pt-22"
-      )}
+      className="flex w-full flex-col items-center pt-12"
       style={{
         scrollbarGutter: "stable both-edges",
         scrollbarWidth: "none",

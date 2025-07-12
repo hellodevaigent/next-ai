@@ -16,12 +16,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 })
 
-export const metadata: Metadata = {
-  title: "Zola",
-  description:
-    "Zola is the open-source interface for AI chat. Multi-model, BYOK-ready, and fully self-hostable. Use Claude, OpenAI, Gemini, local models, and more, all in one place.",
-}
-
 export default async function RootLayout({
   children,
 }: Readonly<{

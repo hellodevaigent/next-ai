@@ -1,8 +1,6 @@
 import { ChatContainerContent } from "@/components/prompt-kit/chat-container"
 import { Loader } from "@/components/prompt-kit/loader"
 import { ScrollButton } from "@/components/prompt-kit/scroll-button"
-import { useUserPreferences } from "@/lib/user-preference-store/provider"
-import { cn } from "@/lib/utils"
 import { useEffect, useMemo, useRef } from "react"
 import { ConversationProps } from "./conversation"
 import { Message } from "./message"
@@ -14,23 +12,20 @@ export function ConversationContent({
   onEdit,
   onReload,
 }: ConversationProps) {
-  const { preferences } = useUserPreferences()
-  const hasSidebar = preferences.layout === "sidebar"
-
   const { containerRef, isOverflowing, checkContainerOverflow } =
     useContainerDistance()
 
   const initialMessageCount = useRef(messages.length)
 
   const lastUserMessageIndex = useMemo(() => {
-    if (!messages) return -1;
+    if (!messages) return -1
     for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === 'user') {
-        return i;
+      if (messages[i].role === "user") {
+        return i
       }
     }
-    return -1;
-  }, [messages]);
+    return -1
+  }, [messages])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,10 +38,7 @@ export function ConversationContent({
   return (
     <ChatContainerContent
       ref={containerRef as React.RefObject<HTMLDivElement>}
-      className={cn(
-        "flex w-full flex-col items-center pb-4",
-        hasSidebar ? "pt-22 md:pt-12" : "pt-22"
-      )}
+      className="flex w-full flex-col items-center pt-12 pb-4"
       style={{
         scrollbarGutter: "stable both-edges",
         scrollbarWidth: "none",
@@ -54,8 +46,10 @@ export function ConversationContent({
     >
       {messages?.map((message, index) => {
         const isLast = index === messages.length - 1 && status !== "submitted"
-        const hasScrollAnchor = isLast && messages.length > initialMessageCount.current
-        const showEditButton = message.role === 'user' && index === lastUserMessageIndex;
+        const hasScrollAnchor =
+          isLast && messages.length > initialMessageCount.current
+        const showEditButton =
+          message.role === "user" && index === lastUserMessageIndex
 
         return (
           <Message

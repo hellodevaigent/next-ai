@@ -47,7 +47,7 @@ export function SidebarProjectMenu({
             <DotsThree size={18} className="text-primary" weight="bold" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-28 md:w-10">
+        <DropdownMenuContent align="end" className="w-40">
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={(e) => {
