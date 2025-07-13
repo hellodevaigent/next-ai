@@ -175,10 +175,8 @@ export function MessageAssistant({
                     <ArrowClockwise className="size-4" />
                   </button>
                 </MessageAction>
-                <div className="inline-flex flex-col text-xs select-none hover:underline hover:underline-offset-2">
-                  <span>
-                    {APP_NAME} can make mistakes. Please double-check responses.
-                  </span>
+                <div className="inline-flex text-xs text-end select-none hover:underline hover:underline-offset-2">
+                  {APP_NAME} can make mistakes. <br className="md:hidden" /> Please double-check responses.
                 </div>
               </div>
             ) : null}

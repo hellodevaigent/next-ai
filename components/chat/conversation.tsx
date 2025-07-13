@@ -6,7 +6,6 @@ import { Loader } from "@/components/prompt-kit/loader"
 import { ScrollButton } from "@/components/prompt-kit/scroll-button"
 import { Message as MessageType } from "@ai-sdk/react"
 import { useRef } from "react"
-import { ConversationSkeleton } from "../skeleton/conversation"
 import { Message } from "./message"
 
 type ConversationProps = {
@@ -15,7 +14,6 @@ type ConversationProps = {
   onDelete: (id: string) => void
   onEdit: (id: string, newText: string) => void
   onReload: () => void
-  isLoading?: boolean
 }
 
 export function Conversation({
@@ -24,7 +22,6 @@ export function Conversation({
   onDelete,
   onEdit,
   onReload,
-  isLoading,
 }: ConversationProps) {
   const initialMessageCount = useRef(messages.length)
 
@@ -45,46 +42,40 @@ export function Conversation({
             scrollbarWidth: "none",
           }}
         >
-          {isLoading ? (
-            <ConversationSkeleton />
-          ) : (
-            <>
-              {messages?.map((message, index) => {
-                const isLast =
-                  index === messages.length - 1 && status !== "submitted"
-                const hasScrollAnchor =
-                  isLast && messages.length > initialMessageCount.current
+          {messages?.map((message, index) => {
+            const isLast =
+              index === messages.length - 1 && status !== "submitted"
+            const hasScrollAnchor =
+              isLast && messages.length > initialMessageCount.current
 
-                return (
-                  <Message
-                    key={message.id}
-                    id={message.id}
-                    variant={message.role}
-                    attachments={message.experimental_attachments}
-                    isLast={isLast}
-                    onDelete={onDelete}
-                    onEdit={onEdit}
-                    onReload={onReload}
-                    hasScrollAnchor={hasScrollAnchor}
-                    parts={message.parts}
-                    status={status}
-                  >
-                    {message.content}
-                  </Message>
-                )
-              })}
-              {status === "submitted" &&
-                messages.length > 0 &&
-                messages[messages.length - 1].role === "user" && (
-                  <div className="group min-h-scroll-anchor flex w-full max-w-3xl flex-col items-start gap-2 px-6 pb-2 pt-4">
-                    <Loader />
-                  </div>
-                )}
-              <div className="absolute bottom-0 flex w-full max-w-3xl flex-1 items-end justify-end gap-4 px-6 pb-2">
-                <ScrollButton className="absolute top-[-50px] right-[30px]" />
+            return (
+              <Message
+                key={message.id}
+                id={message.id}
+                variant={message.role}
+                attachments={message.experimental_attachments}
+                isLast={isLast}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                onReload={onReload}
+                hasScrollAnchor={hasScrollAnchor}
+                parts={message.parts}
+                status={status}
+              >
+                {message.content}
+              </Message>
+            )
+          })}
+          {status === "submitted" &&
+            messages.length > 0 &&
+            messages[messages.length - 1].role === "user" && (
+              <div className="group min-h-scroll-anchor flex w-full max-w-3xl flex-col items-start gap-2 px-6 pt-4 pb-2">
+                <Loader />
               </div>
-            </>
-          )}
+            )}
+          <div className="absolute bottom-0 flex w-full max-w-3xl flex-1 items-end justify-end gap-4 px-6 pb-2">
+            <ScrollButton className="absolute top-[-50px] right-[30px]" />
+          </div>
         </ChatContainerContent>
       </ChatContainerRoot>
     </div>

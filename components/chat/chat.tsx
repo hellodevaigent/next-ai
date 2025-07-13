@@ -4,10 +4,12 @@ import { ChatInput } from "@/components/chat-input/chat-input"
 import { Conversation } from "@/components/chat/conversation"
 import { useModel } from "@/components/chat/use-model"
 import { useChatDraft } from "@/hooks/use-chat-draft"
+import { useChatLoading } from "@/hooks/use-chat-loading"
 import { useChats } from "@/lib/chat-store/chats/provider"
 import { useMessages } from "@/lib/chat-store/messages/provider"
 import { useChatSession } from "@/lib/chat-store/session/provider"
 import { SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
+import { useTitle } from "@/lib/hooks/use-title"
 import { useUserPreferences } from "@/lib/user-preference-store/provider"
 import { useUser } from "@/lib/user-store/provider"
 import { cn } from "@/lib/utils"
@@ -15,11 +17,10 @@ import { AnimatePresence, motion } from "motion/react"
 import dynamic from "next/dynamic"
 import { redirect } from "next/navigation"
 import { useMemo, useState } from "react"
+import { ConversationSkeleton } from "../skeleton/conversation"
 import { useChatCore } from "./use-chat-core"
 import { useChatOperations } from "./use-chat-operations"
 import { useFileUpload } from "./use-file-upload"
-import { useTitle } from "@/lib/hooks/use-title"
-import { useChatLoading } from "@/hooks/use-chat-loading"
 
 const FeedbackWidget = dynamic(
   () => import("./feedback-widget").then((mod) => mod.FeedbackWidget),
@@ -140,14 +141,13 @@ export function Chat() {
   // Memoize the conversation props to prevent unnecessary rerenders
   const conversationProps = useMemo(
     () => ({
-      isLoading: shouldShowLoading,
       messages,
       status,
       onDelete: handleDelete,
       onEdit: handleEdit,
       onReload: handleReload,
     }),
-    [isLoadingInitialMessages, messages, status, handleDelete, handleEdit, handleReload]
+    [messages, status, handleDelete, handleEdit, handleReload]
   )
 
   // Memoize the chat input props
@@ -161,7 +161,8 @@ export function Chat() {
       files,
       onFileUpload: handleFileUpload,
       onFileRemove: handleFileRemove,
-      hasSuggestions: preferences.promptSuggestions && !chatId && messages.length === 0,
+      hasSuggestions:
+        preferences.promptSuggestions && !chatId && messages.length === 0,
       onSelectModel: handleModelChange,
       selectedModel,
       isUserAuthenticated: isAuthenticated,
@@ -208,6 +209,10 @@ export function Chat() {
 
   const showOnboarding = !chatId && messages.length === 0
 
+  const shouldShowSkeleton = shouldShowLoading && 
+                          messages.length === 0 && 
+                          !isSubmitting &&
+                          !showOnboarding
   return (
     <div
       className={cn(
@@ -236,6 +241,8 @@ export function Chat() {
               What&apos;s on your mind?
             </h1>
           </motion.div>
+        ) : shouldShowSkeleton ? (
+          <ConversationSkeleton key="skeleton" />
         ) : (
           <Conversation key="conversation" {...conversationProps} />
         )}

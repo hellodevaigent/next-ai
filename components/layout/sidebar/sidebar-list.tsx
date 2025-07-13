@@ -9,10 +9,19 @@ type SidebarListProps = {
 
 export function SidebarList({ title, items, currentChatId }: SidebarListProps) {
   return (
-    <div className="space-y-0.5">
-      {items.map((chat) => (
-        <SidebarItem key={chat.id} chat={chat} currentChatId={currentChatId} />
-      ))}
-    </div>
+    <>
+      <div className="bg-sidebar sticky -top-[10px] z-10 block w-full p-2 text-xs text-nowrap">
+        <span className="opacity-50">{title}</span>
+      </div>
+      <div className="space-y-0.5">
+        {items.map((chat) => (
+          <SidebarItem
+            key={chat.id}
+            chat={chat}
+            currentChatId={currentChatId}
+          />
+        ))}
+      </div>
+    </>
   )
 }

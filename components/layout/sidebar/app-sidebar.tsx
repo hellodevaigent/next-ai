@@ -124,7 +124,7 @@ export function AppSidebar() {
         </div>
         <div
           className={cn(
-            "scrollbar-sidebar pt-3 block h-[calc(100vh_-_233px)] mask-b-from-98% mask-b-to-100%",
+            "scrollbar-sidebar pt-1.5 block h-[calc(100vh_-_233px)] mask-b-from-95% mask-b-to-100%",
             open ? "overflow-y-auto" : "overflow-hidden"
           )}
         >
@@ -132,17 +132,11 @@ export function AppSidebar() {
             <SidebarChatSkeleton />
           ) : hasChats ? (
             <div className={cn("w-full px-2", open ? "block" : "hidden")}>
-              <div className="block bg-sidebar sticky -top-[13px] z-10 w-full p-2 text-xs text-nowrap">
-                <span className="opacity-50">Recents</span>
-              </div>
-              {groupedChats?.map((group) => (
-                <SidebarList
-                  key={group.name}
-                  title={group.name}
-                  items={group.chats}
-                  currentChatId={currentChatId}
-                />
-              ))}
+              <SidebarList
+                title="Recents"
+                items={chats}
+                currentChatId={currentChatId}
+              />
             </div>
           ) : (
             <ul className="mt-3 flex w-full min-w-0 flex-col gap-0.5">
