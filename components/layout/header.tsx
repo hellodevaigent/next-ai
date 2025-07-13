@@ -84,9 +84,9 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
           ) : (
             <div className="pointer-events-auto flex flex-1 items-center justify-end gap-2">
               {!isMultiModelEnabled && <DialogPublish />}
-              {/* <ButtonNewChat /> */}
+              {isMobile && <ButtonNewChat />}
               {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
-              <UserMenu />
+              {isHomePage && <UserMenu />}
             </div>
           )}
         </div>

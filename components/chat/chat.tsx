@@ -19,6 +19,7 @@ import { useChatCore } from "./use-chat-core"
 import { useChatOperations } from "./use-chat-operations"
 import { useFileUpload } from "./use-file-upload"
 import { useTitle } from "@/lib/hooks/use-title"
+import { useChatLoading } from "@/hooks/use-chat-loading"
 
 const FeedbackWidget = dynamic(
   () => import("./feedback-widget").then((mod) => mod.FeedbackWidget),
@@ -47,7 +48,12 @@ export function Chat() {
     [chatId, getChatById]
   )
 
-  const { messages: initialMessages, cacheAndAddMessage } = useMessages()
+  const {
+    messages: initialMessages,
+    cacheAndAddMessage,
+    isLoading: isLoadingInitialMessages,
+  } = useMessages()
+
   const { user } = useUser()
   const { preferences } = useUserPreferences()
   const { draftValue, clearDraft } = useChatDraft(chatId)
@@ -125,16 +131,23 @@ export function Chat() {
     bumpChat,
   })
 
+  const { shouldShowLoading } = useChatLoading(
+    chatId,
+    isLoadingInitialMessages,
+    initialMessages.length > 0
+  )
+
   // Memoize the conversation props to prevent unnecessary rerenders
   const conversationProps = useMemo(
     () => ({
+      isLoading: shouldShowLoading,
       messages,
       status,
       onDelete: handleDelete,
       onEdit: handleEdit,
       onReload: handleReload,
     }),
-    [messages, status, handleDelete, handleEdit, handleReload]
+    [isLoadingInitialMessages, messages, status, handleDelete, handleEdit, handleReload]
   )
 
   // Memoize the chat input props
@@ -148,8 +161,7 @@ export function Chat() {
       files,
       onFileUpload: handleFileUpload,
       onFileRemove: handleFileRemove,
-      hasSuggestions:
-        preferences.promptSuggestions && !chatId && messages.length === 0,
+      hasSuggestions: preferences.promptSuggestions && !chatId && messages.length === 0,
       onSelectModel: handleModelChange,
       selectedModel,
       isUserAuthenticated: isAuthenticated,

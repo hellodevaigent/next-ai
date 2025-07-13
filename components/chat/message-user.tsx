@@ -8,16 +8,13 @@ import {
   MorphingDialogImage,
   MorphingDialogTrigger,
 } from "@/components/motion-primitives/morphing-dialog"
-import {
-  MessageAction,
-  MessageActions,
-  Message as MessageContainer,
-  MessageContent,
-} from "@/components/prompt-kit/message"
+import { Message as MessageContainer } from "@/components/prompt-kit/message"
 import { Button } from "@/components/ui/button"
+import useClickOutside from "@/hooks/use-click-outside"
+import { useUser } from "@/lib/user-store/provider"
 import { cn } from "@/lib/utils"
 import { Message as MessageType } from "@ai-sdk/react"
-import { Check, Copy, Trash } from "@phosphor-icons/react"
+import * as Avatar from "@radix-ui/react-avatar"
 import Image from "next/image"
 import { useRef, useState } from "react"
 
@@ -47,13 +44,23 @@ export function MessageUser({
   copyToClipboard,
   onEdit,
   onReload,
-  onDelete,
   id,
   className,
 }: MessageUserProps) {
+  const { user } = useUser()
+
   const [editInput, setEditInput] = useState(children)
   const [isEditing, setIsEditing] = useState(false)
+  const [showActions, setShowActions] = useState(false)
+
   const contentRef = useRef<HTMLDivElement>(null)
+  const actionsRef = useRef<HTMLDivElement>(null)
+
+  useClickOutside(actionsRef, () => {
+    if (showActions) {
+      setShowActions(false)
+    }
+  })
 
   const handleEditCancel = () => {
     setIsEditing(false)
@@ -68,155 +75,144 @@ export function MessageUser({
     setIsEditing(false)
   }
 
-  const handleDelete = () => {
-    onDelete(id)
+  const toggleActions = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowActions(!showActions)
   }
 
   return (
     <MessageContainer
       className={cn(
-        "group flex w-full max-w-3xl flex-col items-end gap-0.5 px-6 pb-2",
+        "flex w-full max-w-3xl flex-col items-start gap-0.5 px-4 pb-4",
         hasScrollAnchor && "min-h-scroll-anchor",
         className
       )}
     >
-      {attachments?.map((attachment, index) => (
-        <div
-          className="flex flex-row gap-2"
-          key={`${attachment.name}-${index}`}
-        >
-          {attachment.contentType?.startsWith("image") ? (
-            <MorphingDialog
-              transition={{
-                type: "spring",
-                stiffness: 280,
-                damping: 18,
-                mass: 0.3,
-              }}
-            >
-              <MorphingDialogTrigger className="z-10">
-                <Image
-                  className="mb-1 w-40 rounded-md"
-                  key={attachment.name}
-                  src={attachment.url}
-                  alt={attachment.name || "Attachment"}
-                  width={160}
-                  height={120}
-                />
-              </MorphingDialogTrigger>
-              <MorphingDialogContainer>
-                <MorphingDialogContent className="relative rounded-lg">
-                  <MorphingDialogImage
+      <div
+        className="group bg-accent relative gap-2 rounded-lg py-2 pr-4 pl-2 break-words transition-all"
+        onClick={toggleActions}
+      >
+        {attachments?.map((attachment, index) => (
+          <div
+            className="mb-2 flex flex-row gap-2"
+            key={`${attachment.name}-${index}`}
+          >
+            {attachment.contentType?.startsWith("image") ? (
+              <MorphingDialog
+                transition={{
+                  type: "spring",
+                  stiffness: 280,
+                  damping: 18,
+                  mass: 0.3,
+                }}
+              >
+                <MorphingDialogTrigger className="z-10">
+                  <Image
+                    className="mb-1 w-40 rounded-md"
+                    key={attachment.name}
                     src={attachment.url}
-                    alt={attachment.name || ""}
-                    className="max-h-[90vh] max-w-[90vw] object-contain"
+                    alt={attachment.name || "Attachment"}
+                    width={160}
+                    height={120}
                   />
-                </MorphingDialogContent>
-                <MorphingDialogClose className="text-primary" />
-              </MorphingDialogContainer>
-            </MorphingDialog>
-          ) : attachment.contentType?.startsWith("text") ? (
-            <div className="text-primary mb-3 h-24 w-40 overflow-hidden rounded-md border p-2 text-xs">
-              {getTextFromDataUrl(attachment.url)}
+                </MorphingDialogTrigger>
+                <MorphingDialogContainer>
+                  <MorphingDialogContent className="relative rounded-lg">
+                    <MorphingDialogImage
+                      src={attachment.url}
+                      alt={attachment.name || ""}
+                      className="max-h-[90vh] max-w-[90vw] object-contain"
+                    />
+                  </MorphingDialogContent>
+                  <MorphingDialogClose className="text-primary" />
+                </MorphingDialogContainer>
+              </MorphingDialog>
+            ) : attachment.contentType?.startsWith("text") ? (
+              <div className="text-primary mb-3 h-24 w-40 overflow-hidden rounded-md border p-2 text-xs">
+                {getTextFromDataUrl(attachment.url)}
+              </div>
+            ) : null}
+          </div>
+        ))}
+
+        <div className="flex gap-2">
+          <div className="shrink-0">
+            <Avatar.Root className="bg-blackA1 inline-flex size-7 items-center justify-center overflow-hidden rounded-full align-middle select-none">
+              <Avatar.Image
+                className="size-full rounded-[inherit] object-cover"
+                src={user?.profile_image ?? undefined}
+                alt={user?.display_name}
+                referrerPolicy="no-referrer"
+              />
+              <Avatar.Fallback className="bg-background-primary text-text flex size-full items-center justify-center text-[12px] leading-1 font-medium">
+                {user?.display_name?.charAt(0)}
+              </Avatar.Fallback>
+            </Avatar.Root>
+          </div>
+
+          {isEditing ? (
+            <div className="grid flex-1 grid-cols-1 gap-2 py-0.5 text-[0.9375rem] leading-6 font-medium">
+              <textarea
+                className="w-full resize-none bg-transparent break-words whitespace-pre-wrap outline-none"
+                value={editInput}
+                onChange={(e) => setEditInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSave()
+                  }
+                  if (e.key === "Escape") {
+                    handleEditCancel()
+                  }
+                }}
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <Button size="sm" variant="ghost" onClick={handleEditCancel}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleSave}>
+                  Save
+                </Button>
+              </div>
             </div>
-          ) : null}
+          ) : (
+            <div
+              data-testid="user-message"
+              className="grid grid-cols-1 gap-2 py-0.5 text-[0.9375rem] leading-6 font-medium"
+              ref={contentRef}
+            >
+              <p className="break-words whitespace-pre-wrap">{children}</p>
+            </div>
+          )}
         </div>
-      ))}
-      {isEditing ? (
-        <div
-          className="bg-accent relative flex min-w-[180px] flex-col gap-2 rounded-3xl px-5 py-1.5"
-          style={{
-            width: contentRef.current?.offsetWidth,
-          }}
-        >
-          <textarea
-            className="w-full resize-none bg-transparent outline-none"
-            value={editInput}
-            onChange={(e) => setEditInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault()
-                handleSave()
-              }
-              if (e.key === "Escape") {
-                handleEditCancel()
-              }
-            }}
-            autoFocus
-          />
-          <div className="flex justify-end gap-2">
-            <Button size="sm" variant="ghost" onClick={handleEditCancel}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={handleSave}>
-              Save
-            </Button>
+
+        <div className="pointer-events-none absolute right-2 bottom-0">
+          <div
+            ref={actionsRef}
+            className={cn(
+              "bg-accent border-border pointer-events-auto min-w-max translate-x-1 translate-y-4 rounded-md border p-0.5 shadow-sm backdrop-blur-sm transition",
+              showActions
+                ? "translate-x-0.5 opacity-100"
+                : "opacity-0 group-hover:translate-x-0.5 group-hover:opacity-100"
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-stretch justify-between gap-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  copyToClipboard()
+                }}
+                className="-mt-[2px] flex cursor-pointer flex-row items-center gap-1.5 rounded-md p-1.5 py-1 text-xs transition select-auto active:scale-95"
+                aria-label="Copy text"
+              >
+                {copied ? "copied" : "Copy"}
+              </button>
+            </div>
           </div>
         </div>
-      ) : (
-        <MessageContent
-          className="bg-accent relative max-w-[70%] rounded-3xl px-5 py-1.5"
-          markdown={true}
-          ref={contentRef}
-          components={{
-            code: ({ children }) => <>{children}</>,
-            pre: ({ children }) => <>{children}</>,
-            h1: ({ children }) => <p>{children}</p>,
-            h2: ({ children }) => <p>{children}</p>,
-            h3: ({ children }) => <p>{children}</p>,
-            h4: ({ children }) => <p>{children}</p>,
-            h5: ({ children }) => <p>{children}</p>,
-            h6: ({ children }) => <p>{children}</p>,
-            p: ({ children }) => <p>{children}</p>,
-            li: ({ children }) => <p>- {children}</p>,
-            ul: ({ children }) => <>{children}</>,
-            ol: ({ children }) => <>{children}</>,
-          }}
-        >
-          {children}
-        </MessageContent>
-      )}
-      <MessageActions className="flex gap-0 transition-opacity duration-0 lg:opacity-0 lg:group-hover:opacity-100">
-        <MessageAction tooltip={copied ? "Copied!" : "Copy text"} side="bottom">
-          <button
-            className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex size-7.5 items-center justify-center rounded-full bg-transparent transition"
-            aria-label="Copy text"
-            onClick={copyToClipboard}
-            type="button"
-          >
-            {copied ? (
-              <Check className="size-4" />
-            ) : (
-              <Copy className="size-4" />
-            )}
-          </button>
-        </MessageAction>
-        {/* @todo: add when ready */}
-        {/* <MessageAction
-          tooltip={isEditing ? "Save" : "Edit"}
-          side="bottom"
-          delayDuration={0}
-        >
-          <button
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-transparent transition"
-            aria-label="Edit"
-            onClick={() => setIsEditing(!isEditing)}
-            type="button"
-          >
-            <PencilSimple className="size-4" />
-          </button>
-        </MessageAction> */}
-        <MessageAction tooltip="Delete" side="bottom">
-          <button
-            className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex size-7.5 items-center justify-center rounded-full bg-transparent transition"
-            aria-label="Delete"
-            onClick={handleDelete}
-            type="button"
-          >
-            <Trash className="size-4" />
-          </button>
-        </MessageAction>
-      </MessageActions>
+      </div>
     </MessageContainer>
   )
 }

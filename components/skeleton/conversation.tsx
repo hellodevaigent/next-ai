@@ -29,7 +29,7 @@ export const ConversationSkeleton = () => {
   }, []);
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto space-y-3">
+    <div className="relative w-full max-w-3xl mx-auto space-y-3 px-4 overflow-hidden">
       <div className="flex items-center space-x-3 p-3 bg-accent rounded-xl !mb-4">
         <div className="size-8 rounded-full bg-sidebar animate-pulse" />
         <div className="w-full h-6 bg-sidebar rounded-md animate-pulse" />

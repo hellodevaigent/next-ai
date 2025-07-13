@@ -15,7 +15,7 @@ type MessageProps = {
   hasScrollAnchor?: boolean
   parts?: MessageType["parts"]
   status?: "streaming" | "ready" | "submitted" | "error"
-  className?: string
+  className?: string;
 }
 
 export function Message({

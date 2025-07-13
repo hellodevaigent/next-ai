@@ -1,6 +1,5 @@
 "use client"
 
-import { useBreakpoint } from "@/hooks/use-breakpoint"
 import XIcon from "@/components/icons/x"
 import { Button } from "@/components/ui/button"
 import {
@@ -24,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useBreakpoint } from "@/hooks/use-breakpoint"
 import { useChatSession } from "@/lib/chat-store/session/provider"
 import { APP_DOMAIN } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
@@ -104,7 +104,7 @@ export function DialogPublish() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-muted-foreground hover:text-foreground hover:bg-muted bg-background rounded-full p-1 transition-colors border"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted bg-background rounded-full border p-1 transition-colors"
             onClick={handlePublish}
             disabled={isLoading}
           >

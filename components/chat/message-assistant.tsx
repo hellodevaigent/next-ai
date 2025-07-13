@@ -4,10 +4,13 @@ import {
   MessageActions,
   MessageContent,
 } from "@/components/prompt-kit/message"
+import useClickOutside from "@/hooks/use-click-outside"
+import { APP_NAME } from "@/lib/config"
 import { useUserPreferences } from "@/lib/user-preference-store/provider"
 import { cn } from "@/lib/utils"
 import type { Message as MessageAISDK } from "@ai-sdk/react"
 import { ArrowClockwise, Check, Copy } from "@phosphor-icons/react"
+import { useRef, useState } from "react"
 import { getSources } from "./get-sources"
 import { Reasoning } from "./reasoning"
 import { SearchImages } from "./search-images"
@@ -38,6 +41,21 @@ export function MessageAssistant({
   className,
 }: MessageAssistantProps) {
   const { preferences } = useUserPreferences()
+
+  const [showActions, setShowActions] = useState(false)
+  const actionsRef = useRef<HTMLDivElement>(null)
+
+  useClickOutside(actionsRef, () => {
+    if (showActions) {
+      setShowActions(false)
+    }
+  })
+
+  const toggleActions = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowActions(!showActions)
+  }
+
   const sources = getSources(parts)
   const toolInvocationParts = parts?.filter(
     (part) => part.type === "tool-invocation"
@@ -66,12 +84,15 @@ export function MessageAssistant({
   return (
     <Message
       className={cn(
-        "group flex w-full max-w-3xl flex-1 items-start gap-4 px-6 pb-2",
+        "group flex w-full max-w-3xl flex-1 items-start gap-4 px-4 pb-2",
         hasScrollAnchor && "min-h-scroll-anchor",
         className
       )}
     >
-      <div className={cn("flex min-w-full flex-col gap-2", isLast && "pb-8")}>
+      <div
+        className={cn("flex min-w-full flex-col gap-2", isLast && "pb-8")}
+        onClick={toggleActions}
+      >
         {reasoningParts && reasoningParts.reasoning && (
           <Reasoning
             reasoning={reasoningParts.reasoning}
@@ -105,8 +126,14 @@ export function MessageAssistant({
 
         {Boolean(isLastStreaming || contentNullOrEmpty) ? null : (
           <MessageActions
+            ref={actionsRef}
             className={cn(
-              "-ml-2 flex gap-0 transition-opacity lg:opacity-0 lg:group-hover:opacity-100"
+              "-ml-2 flex gap-0 transition-opacity",
+              showActions
+                ? "opacity-100"
+                : isLast
+                  ? ""
+                  : "opacity-0 group-hover:opacity-100"
             )}
           >
             <MessageAction
@@ -116,7 +143,10 @@ export function MessageAssistant({
               <button
                 className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex size-7.5 items-center justify-center rounded-full bg-transparent transition"
                 aria-label="Copy text"
-                onClick={copyToClipboard}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  copyToClipboard?.()
+                }}
                 type="button"
               >
                 {copied ? (
@@ -127,20 +157,30 @@ export function MessageAssistant({
               </button>
             </MessageAction>
             {isLast ? (
-              <MessageAction
-                tooltip="Regenerate"
-                side="bottom"
-                delayDuration={0}
-              >
-                <button
-                  className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex size-7.5 items-center justify-center rounded-full bg-transparent transition"
-                  aria-label="Regenerate"
-                  onClick={onReload}
-                  type="button"
+              <div className="flex w-full items-center justify-between">
+                <MessageAction
+                  tooltip="Regenerate"
+                  side="bottom"
+                  delayDuration={0}
                 >
-                  <ArrowClockwise className="size-4" />
-                </button>
-              </MessageAction>
+                  <button
+                    className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex size-7.5 items-center justify-center rounded-full bg-transparent transition"
+                    aria-label="Regenerate"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onReload?.()
+                    }}
+                    type="button"
+                  >
+                    <ArrowClockwise className="size-4" />
+                  </button>
+                </MessageAction>
+                <div className="inline-flex flex-col text-xs select-none hover:underline hover:underline-offset-2">
+                  <span>
+                    {APP_NAME} can make mistakes. Please double-check responses.
+                  </span>
+                </div>
+              </div>
             ) : null}
           </MessageActions>
         )}
