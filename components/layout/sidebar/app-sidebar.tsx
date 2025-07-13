@@ -18,17 +18,16 @@ import {
   NotePencilIcon,
   X,
 } from "@phosphor-icons/react"
+import { FolderPlusIcon } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useMemo } from "react"
 import { HistoryTrigger } from "../../history/history-trigger"
 import { HeaderSidebarTrigger } from "../header-sidebar-trigger"
 import { SidebarList } from "./sidebar-list"
-import { SidebarProject } from "./sidebar-project"
-import { FolderPlusIcon } from "lucide-react"
 
 export function AppSidebar() {
-  const { open } = useSidebar()
+  const { open, setOpenMobile } = useSidebar()
   const { chats, isLoading } = useChats()
   const params = useParams<{ chatId: string }>()
   const currentChatId = params.chatId
@@ -51,17 +50,21 @@ export function AppSidebar() {
               "pointer-events-auto mr-2 inline-flex items-center text-xl font-medium tracking-tight duration-200",
               open ? "opacity-100" : "opacity-0"
             )}
+            onClick={() => setOpenMobile(false)}
           >
             {APP_NAME}
           </Link>
         </div>
       </SidebarHeader>
       <div>
-        <div className="mb-3 flex w-full flex-col items-start gap-0 p-2 border-b">
+        <div className="flex w-full flex-col items-start gap-0 border-b p-2">
           <button
             className="hover:bg-accent/80 hover:text-foreground text-primary group/new-chat relative inline-flex w-full items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
             type="button"
-            onClick={() => router.push("/")}
+            onClick={() => {
+              setOpenMobile(false)
+              router.push("/")
+            }}
           >
             <span className="mr-2">
               <NotePencilIcon size={18} />
@@ -101,7 +104,10 @@ export function AppSidebar() {
           <button
             className="hover:bg-accent/80 hover:text-foreground text-primary group/new-chat relative inline-flex w-full items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
             type="button"
-            onClick={() => router.push("/project")}
+            onClick={() => {
+              setOpenMobile(false)
+              router.push("/project")
+            }}
           >
             <span className="mr-2">
               <FolderPlusIcon size={18} />
@@ -118,7 +124,7 @@ export function AppSidebar() {
         </div>
         <div
           className={cn(
-            "scrollbar-sidebar block h-[calc(100vh_-_270px)] mask-t-from-98% mask-t-to-100% mask-b-from-98% mask-b-to-100%",
+            "scrollbar-sidebar pt-3 block h-[calc(100vh_-_233px)] mask-b-from-98% mask-b-to-100%",
             open ? "overflow-y-auto" : "overflow-hidden"
           )}
         >
@@ -126,7 +132,7 @@ export function AppSidebar() {
             <SidebarChatSkeleton />
           ) : hasChats ? (
             <div className={cn("w-full px-2", open ? "block" : "hidden")}>
-              <div className="bg-sidebar sticky top-0 z-10 w-full px-2 pt-1 pb-2 text-xs text-nowrap">
+              <div className="block bg-sidebar sticky -top-[13px] z-10 w-full p-2 text-xs text-nowrap">
                 <span className="opacity-50">Recents</span>
               </div>
               {groupedChats?.map((group) => (

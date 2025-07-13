@@ -29,7 +29,7 @@ export function ButtonNewChat() {
           prefetch
           aria-label="New Chat"
         >
-          <NotePencilIcon size={24} />
+          <NotePencilIcon size={20} />
         </Link>
       </TooltipTrigger>
       <TooltipContent>New Chat ⌘⇧U</TooltipContent>

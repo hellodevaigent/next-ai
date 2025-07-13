@@ -104,7 +104,7 @@ export function DialogPublish() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-muted-foreground hover:text-foreground hover:bg-muted bg-background rounded-full p-1.5 transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted bg-background rounded-full p-1 transition-colors border"
             onClick={handlePublish}
             disabled={isLoading}
           >

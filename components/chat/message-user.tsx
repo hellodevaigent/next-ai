@@ -124,7 +124,7 @@ export function MessageUser({
       ))}
       {isEditing ? (
         <div
-          className="bg-accent relative flex min-w-[180px] flex-col gap-2 rounded-3xl px-5 py-2.5"
+          className="bg-accent relative flex min-w-[180px] flex-col gap-2 rounded-3xl px-5 py-1.5"
           style={{
             width: contentRef.current?.offsetWidth,
           }}
@@ -155,7 +155,7 @@ export function MessageUser({
         </div>
       ) : (
         <MessageContent
-          className="bg-accent relative max-w-[70%] rounded-3xl px-5 py-2.5"
+          className="bg-accent relative max-w-[70%] rounded-3xl px-5 py-1.5"
           markdown={true}
           ref={contentRef}
           components={{
@@ -176,7 +176,7 @@ export function MessageUser({
           {children}
         </MessageContent>
       )}
-      <MessageActions className="flex gap-0 opacity-0 transition-opacity duration-0 group-hover:opacity-100">
+      <MessageActions className="flex gap-0 transition-opacity duration-0 lg:opacity-0 lg:group-hover:opacity-100">
         <MessageAction tooltip={copied ? "Copied!" : "Copy text"} side="bottom">
           <button
             className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex size-7.5 items-center justify-center rounded-full bg-transparent transition"
