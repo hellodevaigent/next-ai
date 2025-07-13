@@ -10,6 +10,7 @@ import {
 } from "@/components/motion-primitives/morphing-dialog"
 import { Message as MessageContainer } from "@/components/prompt-kit/message"
 import { Button } from "@/components/ui/button"
+import { useBreakpoint } from "@/hooks/use-breakpoint"
 import useClickOutside from "@/hooks/use-click-outside"
 import { useUser } from "@/lib/user-store/provider"
 import { cn } from "@/lib/utils"
@@ -28,6 +29,7 @@ export type MessageUserProps = {
   attachments?: MessageType["experimental_attachments"]
   children: string
   copied: boolean
+  isLast?: boolean
   copyToClipboard: () => void
   onEdit: (id: string, newText: string) => void
   onReload: () => void
@@ -46,8 +48,10 @@ export function MessageUser({
   onReload,
   id,
   className,
+  isLast,
 }: MessageUserProps) {
   const { user } = useUser()
+  const isMobile = useBreakpoint(768)
 
   const [editInput, setEditInput] = useState(children)
   const [isEditing, setIsEditing] = useState(false)
@@ -76,6 +80,7 @@ export function MessageUser({
   }
 
   const toggleActions = (e: React.MouseEvent) => {
+    if (!isMobile) return
     e.stopPropagation()
     setShowActions(!showActions)
   }
@@ -194,7 +199,8 @@ export function MessageUser({
               "bg-accent border-border pointer-events-auto min-w-max translate-x-1 translate-y-4 rounded-md border p-0.5 shadow-sm backdrop-blur-sm transition",
               showActions
                 ? "translate-x-0.5 opacity-100"
-                : "opacity-0 group-hover:translate-x-0.5 group-hover:opacity-100"
+                : "opacity-0 group-hover:translate-x-0.5 group-hover:opacity-100",
+              isEditing ? "hidden" : ""
             )}
             onClick={(e) => e.stopPropagation()}
           >
@@ -209,6 +215,15 @@ export function MessageUser({
               >
                 {copied ? "copied" : "Copy"}
               </button>
+              {isLast && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-background-primary flex flex-row items-center gap-1.5 rounded-md p-1.5 py-0.5 text-xs transition select-auto active:scale-95"
+                  aria-label="Edit"
+                >
+                  Edit
+                </button>
+              )}
             </div>
           </div>
         </div>

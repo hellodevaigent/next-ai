@@ -5,7 +5,7 @@ import {
 import { Loader } from "@/components/prompt-kit/loader"
 import { ScrollButton } from "@/components/prompt-kit/scroll-button"
 import { Message as MessageType } from "@ai-sdk/react"
-import { useRef } from "react"
+import { useMemo, useRef } from "react"
 import { Message } from "./message"
 
 type ConversationProps = {
@@ -25,6 +25,16 @@ export function Conversation({
 }: ConversationProps) {
   const initialMessageCount = useRef(messages.length)
 
+  const lastUserMessageIndex = useMemo(() => {
+    if (!messages) return -1
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "user") {
+        return i
+      }
+    }
+    return -1
+  }, [messages])
+
   if (!messages || messages.length === 0)
     return <div className="h-full w-full"></div>
 
@@ -43,10 +53,9 @@ export function Conversation({
           }}
         >
           {messages?.map((message, index) => {
-            const isLast =
-              index === messages.length - 1 && status !== "submitted"
-            const hasScrollAnchor =
-              isLast && messages.length > initialMessageCount.current
+            const isLast = index === messages.length - 1 && status !== "submitted"
+            const hasScrollAnchor = isLast && messages.length > initialMessageCount.current
+            const showEditButton = message.role === "user" && index === lastUserMessageIndex
 
             return (
               <Message
@@ -54,7 +63,7 @@ export function Conversation({
                 id={message.id}
                 variant={message.role}
                 attachments={message.experimental_attachments}
-                isLast={isLast}
+                isLast={isLast || showEditButton}
                 onDelete={onDelete}
                 onEdit={onEdit}
                 onReload={onReload}

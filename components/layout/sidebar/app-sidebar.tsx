@@ -32,10 +32,11 @@ export function AppSidebar() {
   const params = useParams<{ chatId: string }>()
   const currentChatId = params.chatId
 
-  const groupedChats = useMemo(() => {
-    const result = groupChatsByDate(chats, "")
-    return result
-  }, [chats])
+  // const groupedChats = useMemo(() => {
+  //   const result = groupChatsByDate(chats, "")
+  //   return result
+  // }, [chats])
+  
   const hasChats = chats.length > 0
   const router = useRouter()
 

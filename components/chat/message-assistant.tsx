@@ -16,6 +16,7 @@ import { Reasoning } from "./reasoning"
 import { SearchImages } from "./search-images"
 import { SourcesList } from "./sources-list"
 import { ToolInvocation } from "./tool-invocation"
+import { useBreakpoint } from "@/hooks/use-breakpoint"
 
 type MessageAssistantProps = {
   children: string
@@ -41,6 +42,7 @@ export function MessageAssistant({
   className,
 }: MessageAssistantProps) {
   const { preferences } = useUserPreferences()
+  const isMobile = useBreakpoint(768)
 
   const [showActions, setShowActions] = useState(false)
   const actionsRef = useRef<HTMLDivElement>(null)
@@ -52,6 +54,7 @@ export function MessageAssistant({
   })
 
   const toggleActions = (e: React.MouseEvent) => {
+    if (!isMobile) return
     e.stopPropagation()
     setShowActions(!showActions)
   }
