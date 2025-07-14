@@ -1,5 +1,5 @@
 import { LayoutApp } from "@/components/layout/layout-app"
-import { SidebarProject } from "@/components/layout/sidebar/sidebar-project"
+import { ProjectContent } from "@/components/project/project-content"
 import { MessagesProvider } from "@/lib/chat-store/messages/provider"
 import { metadata as meta } from "@/lib/metadata"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
@@ -23,7 +23,7 @@ export default async function Page() {
   return (
     <MessagesProvider>
       <LayoutApp>
-        <SidebarProject />
+        <ProjectContent />
       </LayoutApp>
     </MessagesProvider>
   )

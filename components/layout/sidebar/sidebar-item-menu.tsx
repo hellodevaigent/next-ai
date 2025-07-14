@@ -12,7 +12,7 @@ import { Chat } from "@/lib/chat-store/types"
 import { DotsThree, PencilSimple, Trash } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { DialogDeleteChat } from "./dialog-delete-chat"
+import { DialogDeleteChat } from "../../project/dialog-delete-chat"
 import { cn } from "@/lib/utils"
 
 type SidebarItemMenuProps = {

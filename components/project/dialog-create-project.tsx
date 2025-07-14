@@ -52,7 +52,7 @@ export function DialogCreateProject({
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] })
-      router.push(`/p/${data.id}`)
+      // router.push(`/p/${data.id}`)
       setProjectName("")
       setIsOpen(false)
     },

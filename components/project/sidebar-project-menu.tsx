@@ -1,13 +1,14 @@
 "use client"
 
-import { DialogDeleteProject } from "@/components/layout/sidebar/dialog-delete-project"
-import { useBreakpoint } from "@/hooks/use-breakpoint"
+import { DialogDeleteProject } from "@/components/project/dialog-delete-project"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useBreakpoint } from "@/hooks/use-breakpoint"
+import { cn } from "@/lib/utils"
 import { DotsThree, PencilSimple, Trash } from "@phosphor-icons/react"
 import { useState } from "react"
 
@@ -22,12 +23,14 @@ type SidebarProjectMenuProps = {
   project: Project
   onStartEditing: () => void
   onMenuOpenChange?: (open: boolean) => void
+  isMenuOpen?: boolean
 }
 
 export function SidebarProjectMenu({
   project,
   onStartEditing,
   onMenuOpenChange,
+  isMenuOpen,
 }: SidebarProjectMenuProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const isMobile = useBreakpoint(768)
@@ -41,7 +44,10 @@ export function SidebarProjectMenu({
       >
         <DropdownMenuTrigger asChild>
           <button
-            className="hover:bg-secondary flex size-7 items-center justify-center rounded-md p-1 transition-colors duration-150"
+            className={cn(
+              "flex size-7 items-center justify-center rounded-md p-1 transition-colors duration-150",
+              isMenuOpen ? "bg-secondary" : "hover:bg-secondary"
+            )}
             onClick={(e) => e.stopPropagation()}
           >
             <DotsThree size={18} className="text-primary" weight="bold" />

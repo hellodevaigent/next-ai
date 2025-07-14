@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 import { ChatCircleIcon, Check, X } from "@phosphor-icons/react"
 import Link from "next/link"
 import { useCallback, useMemo, useRef, useState } from "react"
-import { SidebarItemMenu } from "./sidebar-item-menu"
+import { SidebarItemMenu } from "../layout/sidebar/sidebar-item-menu"
 
 type ProjectChatItemProps = {
   chat: Chat
@@ -124,7 +124,7 @@ export function ProjectChatItem({ chat, formatDate }: ProjectChatItemProps) {
   const containerClassName = useMemo(
     () =>
       cn(
-        "border-border hover:bg-accent/50 group/chat relative rounded-lg border transition-colors",
+        "border-border hover:bg-accent/80 group/chat relative rounded-lg border transition-colors",
         isEditing || isMenuOpen ? "bg-accent/50" : ""
       ),
     [isEditing, isMenuOpen]
@@ -133,10 +133,13 @@ export function ProjectChatItem({ chat, formatDate }: ProjectChatItemProps) {
   const menuClassName = useMemo(
     () =>
       cn(
-        "absolute top-3 right-3 opacity-0 transition-opacity group-hover/chat:opacity-100",
-        isMobile && "opacity-100 group-hover/chat:opacity-100"
+        "absolute top-3 right-3 opacity-0 transition-opacity",
+        isMobile && "opacity-100 group-hover/chat:opacity-100",
+        isMenuOpen
+          ? "opacity-100 group-hover/chat:opacity-100"
+          : "opacity-0 group-hover/chat:opacity-100"
       ),
-    [isMobile]
+    [isMobile, isMenuOpen]
   )
 
   if (isEditing) {
