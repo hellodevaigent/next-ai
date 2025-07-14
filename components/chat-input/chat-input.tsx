@@ -78,6 +78,12 @@ export function ChatInput({
         return
       }
 
+      if (e.key === "Escape" && status === "streaming") {
+        e.preventDefault()
+        stop()
+        return
+      }
+
       if (e.key === "Enter" && status === "streaming") {
         e.preventDefault()
         return
@@ -141,6 +147,13 @@ export function ChatInput({
     }
   }, [hasSearchSupport, enableSearch, setEnableSearch])
 
+  const getButtonDisabled = () => {
+    if (status === "streaming") {
+      return false
+    }
+    return !value || isSubmitting || isOnlyWhitespace(value)
+  }
+
   return (
     <div className="relative flex w-full flex-col gap-4">
       {hasSuggestions && (
@@ -191,7 +204,7 @@ export function ChatInput({
               <Button
                 size="sm"
                 className="size-9 rounded-full transition-all duration-300 ease-out"
-                disabled={!value || isSubmitting || isOnlyWhitespace(value)}
+                disabled={getButtonDisabled()}
                 type="button"
                 onClick={handleSend}
                 aria-label={status === "streaming" ? "Stop" : "Send message"}

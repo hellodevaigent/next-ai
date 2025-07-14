@@ -2,13 +2,13 @@
 
 import { ChatInput } from "@/components/chat-input/chat-input"
 import { Conversation } from "@/components/chat/conversation"
-import { useModel } from "@/components/chat/use-model"
 import { useChatDraft } from "@/hooks/use-chat-draft"
 import { useChatLoading } from "@/hooks/use-chat-loading"
 import { useChats } from "@/lib/chat-store/chats/provider"
 import { useMessages } from "@/lib/chat-store/messages/provider"
 import { useChatSession } from "@/lib/chat-store/session/provider"
 import { SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
+import { useModel } from "@/lib/hooks/use-model"
 import { useTitle } from "@/lib/hooks/use-title"
 import { useUserPreferences } from "@/lib/user-preference-store/provider"
 import { useUser } from "@/lib/user-store/provider"
@@ -17,10 +17,10 @@ import { AnimatePresence, motion } from "motion/react"
 import dynamic from "next/dynamic"
 import { redirect } from "next/navigation"
 import { useMemo, useState } from "react"
+import { useChatCore } from "../../lib/hooks/use-chat-core"
+import { useChatOperations } from "../../lib/hooks/use-chat-operations"
+import { useFileUpload } from "../../lib/hooks/use-file-upload"
 import { ConversationSkeleton } from "../skeleton/conversation"
-import { useChatCore } from "./use-chat-core"
-import { useChatOperations } from "./use-chat-operations"
-import { useFileUpload } from "./use-file-upload"
 
 const FeedbackWidget = dynamic(
   () => import("./feedback-widget").then((mod) => mod.FeedbackWidget),
@@ -68,7 +68,7 @@ export function Chat() {
     cleanupOptimisticAttachments,
     handleFileUpload,
     handleFileRemove,
-  } = useFileUpload()
+  } = useFileUpload("CHAT_ATTACHMENTS")
 
   // Model selection
   const { selectedModel, handleModelChange } = useModel({
@@ -209,10 +209,12 @@ export function Chat() {
 
   const showOnboarding = !chatId && messages.length === 0
 
-  const shouldShowSkeleton = shouldShowLoading && 
-                          messages.length === 0 && 
-                          !isSubmitting &&
-                          !showOnboarding
+  const shouldShowSkeleton =
+    shouldShowLoading &&
+    messages.length === 0 &&
+    !isSubmitting &&
+    !showOnboarding
+
   return (
     <div
       className={cn(

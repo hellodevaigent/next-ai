@@ -1,6 +1,5 @@
 "use client"
 
-import { groupChatsByDate } from "@/components/history/utils"
 import { SidebarChatSkeleton } from "@/components/skeleton/sidebar-skeleton"
 import {
   Sidebar,
@@ -11,17 +10,10 @@ import {
 import { useChats } from "@/lib/chat-store/chats/provider"
 import { APP_NAME } from "@/lib/config"
 import { cn } from "@/lib/utils"
-import {
-  ChatTeardropText,
-  GithubLogo,
-  MagnifyingGlass,
-  NotePencilIcon,
-  X,
-} from "@phosphor-icons/react"
+import { MagnifyingGlass, NotePencilIcon, X } from "@phosphor-icons/react"
 import { FolderPlusIcon } from "lucide-react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { useMemo } from "react"
 import { HistoryTrigger } from "../../history/history-trigger"
 import { HeaderSidebarTrigger } from "../header-sidebar-trigger"
 import { SidebarList } from "./sidebar-list"
@@ -32,11 +24,6 @@ export function AppSidebar() {
   const params = useParams<{ chatId: string }>()
   const currentChatId = params.chatId
 
-  // const groupedChats = useMemo(() => {
-  //   const result = groupChatsByDate(chats, "")
-  //   return result
-  // }, [chats])
-  
   const hasChats = chats.length > 0
   const router = useRouter()
 
@@ -107,7 +94,7 @@ export function AppSidebar() {
             type="button"
             onClick={() => {
               setOpenMobile(false)
-              router.push("/project")
+              router.push("/projects")
             }}
           >
             <span className="mr-2">
@@ -125,7 +112,7 @@ export function AppSidebar() {
         </div>
         <div
           className={cn(
-            "scrollbar-sidebar pt-1.5 block h-[calc(100vh_-_233px)] mask-b-from-95% mask-b-to-100%",
+            "scrollbar-sidebar block h-[calc(100vh_-_233px)] mask-b-from-95% mask-b-to-100% pt-1.5",
             open ? "overflow-y-auto" : "overflow-hidden"
           )}
         >

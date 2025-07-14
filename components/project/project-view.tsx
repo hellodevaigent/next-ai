@@ -2,9 +2,9 @@
 
 import { ChatInput } from "@/components/chat-input/chat-input"
 import { Conversation } from "@/components/chat/conversation"
-import { useChatOperations } from "@/components/chat/use-chat-operations"
-import { useFileUpload } from "@/components/chat/use-file-upload"
-import { useModel } from "@/components/chat/use-model"
+import { useChatOperations } from "@/lib/hooks/use-chat-operations"
+import { useFileUpload } from "@/lib/hooks/use-file-upload"
+import { useModel } from "@/lib/hooks/use-model"
 import { ProjectChatItem } from "@/components/layout/sidebar/project-chat-item"
 import { toast } from "@/components/ui/toast"
 import { useChats } from "@/lib/chat-store/chats/provider"

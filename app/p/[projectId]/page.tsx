@@ -1,12 +1,18 @@
 import { LayoutApp } from "@/components/layout/layout-app"
-import { ProjectView } from "@/app/p/[projectId]/project-view"
+import { ProjectView } from "@/components/project/project-view"
 import { MessagesProvider } from "@/lib/chat-store/messages/provider"
+import { generateProjectMetadata } from "@/lib/metadata"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/server"
+import { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 type Props = {
   params: Promise<{ projectId: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return generateProjectMetadata({ params })
 }
 
 export default async function Page({ params }: Props) {

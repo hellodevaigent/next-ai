@@ -177,6 +177,23 @@ code {
   scrollbar-color: var(--scrollbar-thumb, var(--ring)) var(--scrollbar-track, var(--background));
 }
 
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow-y: auto;
+}
+
+.scrollbar-x-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow-x: auto;
+}
+
+.scrollbar-hidden::-webkit-scrollbar,
+.scrollbar-x-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

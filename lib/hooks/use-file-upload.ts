@@ -3,10 +3,11 @@ import {
   Attachment,
   checkFileUploadLimit,
   processFiles,
+  UploadType,
 } from "@/lib/file-handling"
 import { useCallback, useState } from "react"
 
-export const useFileUpload = () => {
+export const useFileUpload = (uploadType: UploadType = 'CHAT_ATTACHMENTS') => {
   const [files, setFiles] = useState<File[]>([])
 
   const handleFileUploads = async (
@@ -26,7 +27,7 @@ export const useFileUpload = () => {
     }
 
     try {
-      const processed = await processFiles(files, chatId, uid)
+      const processed = await processFiles(files, chatId, uid, uploadType)
       setFiles([])
       return processed
     } catch {

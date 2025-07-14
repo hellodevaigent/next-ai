@@ -7,6 +7,7 @@ import { DialogCreateProject } from "./dialog-create-project"
 import { SidebarProjectItem } from "./sidebar-project-item"
 import { useSidebar } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
+import { useTitle } from "@/lib/hooks/use-title"
 
 type Project = {
   id: string
@@ -16,6 +17,7 @@ type Project = {
 }
 
 export function SidebarProject() {
+  useTitle(null, "Projects")
   const { open } = useSidebar()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 

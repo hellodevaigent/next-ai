@@ -12,6 +12,7 @@ import {
   updateChatModel as updateChatModelFromDb,
   updateChatTitle,
 } from "./api"
+import { useFileDelete } from "@/lib/hooks/use-file-delete"
 
 interface ChatsContextType {
   chats: Chats[]
@@ -57,6 +58,7 @@ export function ChatsProvider({
   const [isLoading, setIsLoading] = useState(true)
   const [chats, setChats] = useState<Chats[]>([])
   const [loadedChats, setLoadedChats] = useState<Set<string>>(new Set())
+  const { deleteChatAttachments } = useFileDelete()
 
   useEffect(() => {
     if (!userId) return
@@ -110,6 +112,7 @@ export function ChatsProvider({
     setChats((prev) => prev.filter((c) => c.id !== id))
 
     try {
+      await deleteChatAttachments(id)
       await deleteChatFromDb(id)
       if (id === currentChatId && redirect) redirect()
     } catch {

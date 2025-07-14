@@ -16,24 +16,17 @@ import {
 } from "@/components/ui/tooltip"
 import { useUser } from "@/lib/user-store/provider"
 import { GithubLogoIcon } from "@phosphor-icons/react"
+import { UserIcon } from "lucide-react"
+import Link from "next/link"
 import { useState } from "react"
 import { AppInfoTrigger } from "../app-info/app-info-trigger"
 import { FeedbackTrigger } from "../feedback/feedback-trigger"
-import { SettingsTrigger } from "../settings/settings-trigger"
 
 export function UserMenu() {
   const { user } = useUser()
   const [isMenuOpen, setMenuOpen] = useState(false)
-  const [isSettingsOpen, setSettingsOpen] = useState(false)
 
   if (!user) return null
-
-  const handleSettingsOpenChange = (isOpen: boolean) => {
-    setSettingsOpen(isOpen)
-    if (!isOpen) {
-      setMenuOpen(false)
-    }
-  }
 
   return (
     // fix shadcn/ui / radix bug when dialog into dropdown menu
@@ -55,10 +48,6 @@ export function UserMenu() {
         forceMount
         onCloseAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(e) => {
-          if (isSettingsOpen) {
-            e.preventDefault()
-            return
-          }
           setMenuOpen(false)
         }}
       >
@@ -69,7 +58,12 @@ export function UserMenu() {
           </span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <SettingsTrigger onOpenChange={handleSettingsOpenChange} />
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex w-full items-center">
+            <UserIcon className="size-4" />
+            <span>Settings</span>
+          </Link>
+        </DropdownMenuItem>
         <FeedbackTrigger />
         <AppInfoTrigger />
         <DropdownMenuSeparator />

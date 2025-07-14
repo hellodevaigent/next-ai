@@ -1,19 +1,13 @@
-import { ChatContainer } from "@/components/chat/chat-container"
 import { LayoutApp } from "@/components/layout/layout-app"
+import { SidebarProject } from "@/components/layout/sidebar/sidebar-project"
 import { MessagesProvider } from "@/lib/chat-store/messages/provider"
-import { generateChatMetadata } from "@/lib/metadata"
+import { metadata as meta } from "@/lib/metadata"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/server"
-import type { Metadata } from "next"
+import { Metadata } from "next"
 import { redirect } from "next/navigation"
 
-type Props = {
-  params: Promise<{ chatId: string }>
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  return generateChatMetadata({ params })
-}
+export const metadata: Metadata = meta.projects
 
 export default async function Page() {
   if (isSupabaseEnabled) {
@@ -29,7 +23,7 @@ export default async function Page() {
   return (
     <MessagesProvider>
       <LayoutApp>
-        <ChatContainer />
+        <SidebarProject />
       </LayoutApp>
     </MessagesProvider>
   )

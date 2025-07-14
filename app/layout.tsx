@@ -1,6 +1,3 @@
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -11,9 +8,13 @@ import { TanstackQueryProvider } from "@/lib/tanstack-query/tanstack-query-provi
 import { UserPreferencesProvider } from "@/lib/user-preference-store/provider"
 import { UserProvider } from "@/lib/user-store/provider"
 import { getUserProfile } from "@/lib/user/api"
+import type { Metadata } from "next"
 import { ThemeProvider } from "next-themes"
+import { Geist, Geist_Mono } from "next/font/google"
 import Script from "next/script"
 import { LayoutClient } from "./layout-client"
+import "./globals.css"
+import "keen-slider/keen-slider.min.css"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

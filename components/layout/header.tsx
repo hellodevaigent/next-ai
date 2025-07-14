@@ -31,7 +31,7 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
   const isHomePage = /^\/(?:home)?$/.test(pathname)
 
   return (
-    <header className="h-app-header pointer-events-none sticky top-0 right-0 left-0 z-50 border-b">
+    <header className="h-app-header bg-background pointer-events-none sticky top-0 right-0 left-0 z-50 border-b">
       <div className="relative mx-auto flex h-full max-w-full items-center justify-between bg-transparent px-4 lg:bg-transparent">
         <div className="flex flex-1 items-center justify-between md:pl-3">
           <div className="-ml-0.5 flex flex-1 items-center gap-2">

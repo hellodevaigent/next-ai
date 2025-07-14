@@ -66,7 +66,7 @@ export function MessageUser({
     }
   })
 
-  const handleEditCancel = () => {
+  const handleEditCancel = (): void => {
     setIsEditing(false)
     setEditInput(children)
   }
@@ -85,6 +85,18 @@ export function MessageUser({
     setShowActions(!showActions)
   }
 
+  const getGridCols = (count: number) => {
+    const mobile = Math.min(count, 3)
+    const tablet = Math.min(count, 4)
+    const desktop = Math.min(count, 5)
+
+    return cn(
+      `grid-cols-${mobile}`,
+      `sm:grid-cols-${tablet}`,
+      `md:grid-cols-${desktop}`
+    )
+  }
+
   return (
     <MessageContainer
       className={cn(
@@ -93,17 +105,17 @@ export function MessageUser({
         className
       )}
     >
-      <div
-        className="group bg-accent relative gap-2 rounded-lg py-2 pr-4 pl-2 break-words transition-all"
-        onClick={toggleActions}
-      >
-        {attachments?.map((attachment, index) => (
-          <div
-            className="mb-2 flex flex-row gap-2"
-            key={`${attachment.name}-${index}`}
-          >
-            {attachment.contentType?.startsWith("image") ? (
+      {(attachments ?? []).length > 0 && (
+        <div
+          className={cn(
+            "bg-sidebar mb-2 grid gap-2 rounded-md border p-2",
+            getGridCols(attachments!.length)
+          )}
+        >
+          {attachments?.map((attachment, index) =>
+            attachment.contentType?.startsWith("image") ? (
               <MorphingDialog
+                key={`${attachment.name}-${index}`}
                 transition={{
                   type: "spring",
                   stiffness: 280,
@@ -111,9 +123,9 @@ export function MessageUser({
                   mass: 0.3,
                 }}
               >
-                <MorphingDialogTrigger className="z-10">
+                <MorphingDialogTrigger className="cursor-pointer">
                   <Image
-                    className="mb-1 w-40 rounded-md"
+                    className="size-26 rounded-md duration-200 hover:scale-95"
                     key={attachment.name}
                     src={attachment.url}
                     alt={attachment.name || "Attachment"}
@@ -136,10 +148,15 @@ export function MessageUser({
               <div className="text-primary mb-3 h-24 w-40 overflow-hidden rounded-md border p-2 text-xs">
                 {getTextFromDataUrl(attachment.url)}
               </div>
-            ) : null}
-          </div>
-        ))}
+            ) : null
+          )}
+        </div>
+      )}
 
+      <div
+        className="group bg-accent relative gap-2 rounded-lg py-2 pr-4 pl-2 break-words transition-all"
+        onClick={toggleActions}
+      >
         <div className="flex gap-2">
           <div className="shrink-0">
             <Avatar.Root className="bg-blackA1 inline-flex size-7 items-center justify-center overflow-hidden rounded-full align-middle select-none">
@@ -215,7 +232,7 @@ export function MessageUser({
               >
                 {copied ? "copied" : "Copy"}
               </button>
-              {isLast && (
+              {/* {isLast && (
                 <button
                   onClick={() => setIsEditing(true)}
                   className="text-background-primary flex flex-row items-center gap-1.5 rounded-md p-1.5 py-0.5 text-xs transition select-auto active:scale-95"
@@ -223,7 +240,7 @@ export function MessageUser({
                 >
                   Edit
                 </button>
-              )}
+              )} */}
             </div>
           </div>
         </div>

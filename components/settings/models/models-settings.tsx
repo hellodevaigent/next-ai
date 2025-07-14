@@ -134,7 +134,7 @@ export function ModelsSettings() {
               axis="y"
               values={favoriteModels}
               onReorder={handleReorder}
-              className="space-y-2"
+              className="space-y-2 overflow-hidden"
             >
               {favoriteModels.map((model) => {
                 const ProviderIcon = getProviderIcon(model)
@@ -174,7 +174,7 @@ export function ModelsSettings() {
                         onClick={() => removeFavorite(model.id)}
                         type="button"
                         disabled={favoriteModels.length <= 1}
-                        className="text-muted-foreground rounded-md border p-1 opacity-0 transition-all group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="text-muted-foreground rounded-md border p-1 md:opacity-0 transition-all group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
                         title={
                           favoriteModels.length <= 1
                             ? "At least one favorite model is required"
@@ -223,7 +223,7 @@ export function ModelsSettings() {
         </div>
 
         {/* Models grouped by provider */}
-        <div className="space-y-6 pb-6">
+        <div className="space-y-6 pb-10">
           {Object.entries(availableModelsByProvider).map(
             ([iconKey, modelsGroup]) => {
               const firstModel = modelsGroup[0]

@@ -24,7 +24,6 @@ import { toast } from "@/components/ui/toast"
 import { fetchClient } from "@/lib/fetch"
 import { useModel } from "@/lib/model-store/provider"
 import { cn } from "@/lib/utils"
-import { PlusIcon } from "@phosphor-icons/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Loader2, Trash2 } from "lucide-react"
 import { useState } from "react"
@@ -100,14 +99,12 @@ const PROVIDERS: Provider[] = [
 export function ByokSection() {
   const queryClient = useQueryClient()
   const { userKeyStatus, refreshUserKeyStatus, refreshModels } = useModel()
-  const [selectedProvider, setSelectedProvider] = useState<string>("openrouter")
   const [apiKeys, setApiKeys] = useState<Record<string, string>>({})
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [providerToDelete, setProviderToDelete] = useState<string>("")
-
-  const selectedProviderConfig = PROVIDERS.find(
-    (p) => p.id === selectedProvider
-  )
+  // State untuk track loading per provider
+  const [loadingProviders, setLoadingProviders] = useState<Set<string>>(new Set())
+  const [deletingProviders, setDeletingProviders] = useState<Set<string>>(new Set())
 
   const getProviderValue = (providerId: string) => {
     const provider = PROVIDERS.find((p) => p.id === providerId)
@@ -136,6 +133,9 @@ export function ByokSection() {
       if (!res.ok) throw new Error("Failed to save key")
       return res.json()
     },
+    onMutate: ({ provider }) => {
+      setLoadingProviders(prev => new Set(prev).add(provider))
+    },
     onSuccess: async (response, { provider }) => {
       const providerConfig = PROVIDERS.find((p) => p.id === provider)
 
@@ -146,10 +146,8 @@ export function ByokSection() {
           : `Your ${providerConfig?.name} API key has been updated.`,
       })
 
-      // Refresh models and user key status
       await Promise.all([refreshUserKeyStatus(), refreshModels()])
 
-      // If new models were added to favorites, refresh the favorite models cache
       if (response.isNewKey) {
         queryClient.invalidateQueries({ queryKey: ["favorite-models"] })
       }
@@ -166,6 +164,13 @@ export function ByokSection() {
         description: `Failed to save ${providerConfig?.name} API key. Please try again.`,
       })
     },
+    onSettled: (_, __, { provider }) => {
+      setLoadingProviders(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(provider)
+        return newSet
+      })
+    },
   })
 
   const deleteMutation = useMutation({
@@ -178,6 +183,10 @@ export function ByokSection() {
       })
       if (!res.ok) throw new Error("Failed to delete key")
       return res
+    },
+    onMutate: (provider) => {
+      // Set loading state untuk provider yang sedang di-delete
+      setDeletingProviders(prev => new Set(prev).add(provider))
     },
     onSuccess: async (_, provider) => {
       const providerConfig = PROVIDERS.find((p) => p.id === provider)
@@ -198,6 +207,14 @@ export function ByokSection() {
       })
       setDeleteDialogOpen(false)
       setProviderToDelete("")
+    },
+    onSettled: (_, __, provider) => {
+      // Remove loading state untuk provider ini
+      setDeletingProviders(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(provider)
+        return newSet
+      })
     },
   })
 
@@ -228,102 +245,85 @@ export function ByokSection() {
       <p className="text-muted-foreground text-sm">
         Add your own API keys to unlock access to models.
       </p>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-muted-foreground text-sm mb-4">
         Your keys are stored securely with end-to-end encryption.
       </p>
 
-      <div className="mt-4 grid grid-cols-4 gap-3">
-        {PROVIDERS.map((provider) => (
-          <button
-            key={provider.id}
-            type="button"
-            onClick={() => setSelectedProvider(provider.id)}
-            className={cn(
-              "flex aspect-square min-w-28 flex-col items-center justify-center gap-2 rounded-lg border p-4",
-              selectedProvider === provider.id
-                ? "border-primary ring-primary/30 ring-2"
-                : "border-border"
-            )}
-          >
-            <provider.icon className="size-4" />
-            <span>{provider.name}</span>
-          </button>
-        ))}
-        <button
-          key="soon"
-          type="button"
-          disabled
-          className={cn(
-            "flex aspect-square min-w-28 flex-col items-center justify-center gap-2 rounded-lg border p-4 opacity-20",
-            "border-primary border-dashed"
-          )}
-        >
-          <PlusIcon className="size-4" />
-        </button>
-      </div>
-
-      <div className="mt-4">
-        {selectedProviderConfig && (
-          <div className="flex flex-col">
-            <Label htmlFor={`${selectedProvider}-key`} className="mb-3">
-              {selectedProviderConfig.name} API Key
-            </Label>
-            <Input
-              id={`${selectedProvider}-key`}
-              type="password"
-              placeholder={selectedProviderConfig.placeholder}
-              value={getProviderValue(selectedProvider)}
-              onChange={(e) =>
-                setApiKeys((prev) => ({
-                  ...prev,
-                  [selectedProvider]: e.target.value,
-                }))
-              }
-              disabled={saveMutation.isPending}
-            />
-            <div className="mt-0 flex justify-between pl-1">
-              <a
-                href={selectedProviderConfig.getKeyUrl}
-                target="_blank"
-                className="text-muted-foreground mt-1 text-xs hover:underline"
-              >
-                Get API key
-              </a>
-              <div className="flex gap-2">
-                {userKeyStatus[
-                  selectedProvider as keyof typeof userKeyStatus
-                ] && (
+      <div className="space-y-4 pb-10">
+        {PROVIDERS.map((provider) => {
+          const isLoading = loadingProviders.has(provider.id)
+          const isDeleting = deletingProviders.has(provider.id)
+          
+          return (
+            <div
+              key={provider.id}
+              className="p-4 rounded-lg border border-border"
+            >
+              {/* Header dengan Logo, Nama, dan Tombol */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <provider.icon className="size-6 flex-shrink-0" />
+                  <div>
+                    <Label className="text-sm font-medium">{provider.name}</Label>
+                    <a
+                      href={provider.getKeyUrl}
+                      target="_blank"
+                      className="text-muted-foreground block text-xs hover:underline"
+                    >
+                      Get API key
+                    </a>
+                  </div>
+                </div>
+                
+                {/* Tombol Save/Delete */}
+                <div className="flex items-center gap-2">
+                  {userKeyStatus[provider.id as keyof typeof userKeyStatus] && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeleteClick(provider.id)}
+                      disabled={isDeleting || isLoading}
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-4" />
+                      )}
+                    </Button>
+                  )}
                   <Button
+                    onClick={() => handleSave(provider.id)}
                     type="button"
                     size="sm"
-                    variant="outline"
-                    className="mt-2"
-                    onClick={() => handleDeleteClick(selectedProvider)}
-                    disabled={
-                      deleteMutation.isPending || saveMutation.isPending
-                    }
+                    disabled={isLoading || isDeleting}
                   >
-                    <Trash2 className="mr-1 size-4" />
-                    Delete
+                    {isLoading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      "Save"
+                    )}
                   </Button>
-                )}
-                <Button
-                  onClick={() => handleSave(selectedProvider)}
-                  type="button"
-                  size="sm"
-                  className="mt-2"
-                  disabled={saveMutation.isPending || deleteMutation.isPending}
-                >
-                  {saveMutation.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    "Save"
-                  )}
-                </Button>
+                </div>
               </div>
+
+              {/* Input API Key */}
+              <Input
+                type="password"
+                placeholder={provider.placeholder}
+                value={getProviderValue(provider.id)}
+                onChange={(e) =>
+                  setApiKeys((prev) => ({
+                    ...prev,
+                    [provider.id]: e.target.value,
+                  }))
+                }
+                disabled={isLoading || isDeleting}
+                className="w-full"
+              />
             </div>
-          </div>
-        )}
+          )
+        })}
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -341,9 +341,9 @@ export function ByokSection() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              disabled={deleteMutation.isPending}
+              disabled={deletingProviders.has(providerToDelete)}
             >
-              {deleteMutation.isPending ? (
+              {deletingProviders.has(providerToDelete) ? (
                 <Loader2 className="mr-2 size-4 animate-spin" />
               ) : null}
               Delete

@@ -19,6 +19,18 @@ const nextConfig: NextConfig = withBundleAnalyzer({
         port: "",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: 'https',
+        hostname: 'pub-*.r2.dev',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.r2.cloudflarestorage.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   eslint: {
