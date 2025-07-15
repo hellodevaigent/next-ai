@@ -19,8 +19,8 @@ export function ButtonNewChat() {
     () => router.push("/")
   )
 
-  if (["", "/projects", "/settings"].includes(pathname)) return null
-  
+  if (["/", "/projects", "/settings"].includes(pathname)) return null
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
