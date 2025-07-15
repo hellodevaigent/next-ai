@@ -140,10 +140,9 @@ export function SidebarItem({ chat, currentChatId }: SidebarItemProps) {
     () =>
       cn(
         "absolute top-0 right-1 flex h-full items-center justify-center transition-opacity",
-        isMobile && "opacity-100 group-hover/chat:opacity-100",
         isActive
           ? "opacity-100 group-hover/chat:opacity-100"
-          : "opacity-0 group-hover/chat:opacity-100"
+          : "opacity-100 md:opacity-0 group-hover/chat:opacity-100"
       ),
     [isMobile, isActive]
   )

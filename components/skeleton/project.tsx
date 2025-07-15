@@ -82,7 +82,7 @@ export const ProjectCardSkeleton = ({ count = 6 }: { count?: number }) => (
         </div>
 
         {/* Menu button skeleton */}
-        <div className="absolute top-1.5 right-1.5 z-20 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <div className="absolute top-1.5 right-1.5 z-20 transition-opacity duration-200">
           <Skeleton className="h-6.5 w-6.5 rounded-md" />
         </div>
       </div>

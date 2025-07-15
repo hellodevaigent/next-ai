@@ -1,16 +1,11 @@
 "use client"
 
-import { AppInfoTrigger } from "@/components/app-info/app-info-trigger"
 import { HistoryTrigger } from "@/components/history/history-trigger"
 import { ButtonNewChat } from "@/components/layout/button-new-chat"
-import { UserMenu } from "@/components/layout/user-menu"
-import { Button } from "@/components/ui/button"
 import { useBreakpoint } from "@/hooks/use-breakpoint"
-import { APP_NAME } from "@/lib/config"
 import { useTitleStore } from "@/lib/title-store"
 import { useUserPreferences } from "@/lib/user-preference-store/provider"
 import { useUser } from "@/lib/user-store/provider"
-import { Info } from "@phosphor-icons/react"
 import { AlignLeft } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -21,7 +16,7 @@ import { DialogPublish } from "./dialog-publish"
 export function Header({ hasSidebar }: { hasSidebar: boolean }) {
   const isMobile = useBreakpoint(768)
   const { user } = useUser()
-  const { toggleSidebar } = useSidebar()
+  const { setOpenMobile } = useSidebar()
   const { title, isLoading } = useTitleStore()
   const { preferences } = useUserPreferences()
   const isMultiModelEnabled = preferences.multiModelEnabled
@@ -39,8 +34,8 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
               {isMobile && (
                 <button
                   type="button"
-                  onClick={() => toggleSidebar()}
-                  className="text-muted-foreground mt-[2px] hover:text-foreground pointer-events-auto inline-flex items-center justify-center rounded-md bg-transparent transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  onClick={() => setOpenMobile(true)}
+                  className="text-muted-foreground hover:text-foreground pointer-events-auto mt-[2px] inline-flex items-center justify-center rounded-md bg-transparent transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   <AlignLeft className="size-5" />
                 </button>
@@ -74,7 +69,6 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
               {!isMultiModelEnabled && <DialogPublish />}
               {isMobile && <ButtonNewChat />}
               {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
-              {isHomePage && <UserMenu />}
             </div>
           )}
         </div>

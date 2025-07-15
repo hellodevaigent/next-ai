@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { CommandHistory } from "./command-history"
 import { DrawerHistory } from "./drawer-history"
+import { useSidebar } from "../ui/sidebar"
 
 type HistoryTriggerProps = {
   hasSidebar: boolean
@@ -28,9 +29,9 @@ export function HistoryTrigger({
 }: HistoryTriggerProps) {
   const isMobile = useBreakpoint(768)
   const router = useRouter()
+  const [isOpen, setIsOpen] = useState(false)
   const { chats, updateTitle, deleteChat } = useChats()
   const { deleteMessages } = useMessages()
-  const [isOpen, setIsOpen] = useState(false)
   const { chatId } = useChatSession()
 
   const handleSaveEdit = async (id: string, newTitle: string) => {
