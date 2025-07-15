@@ -15,6 +15,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCallback, useMemo, useState, memo } from "react"
 import { formatDate, groupChatsByDate } from "./utils"
+import { useSidebar } from "../ui/sidebar"
 
 // Types
 interface ChatItemProps {
@@ -29,6 +30,7 @@ interface ChatItemProps {
   handleConfirmDelete: (id: string) => Promise<void>
   handleCancelDelete: () => void
   setEditTitle: (title: string) => void
+  sidebarClose: (open: boolean) => void
 }
 
 interface ChatGroup {
@@ -48,7 +50,8 @@ const ChatItem = memo<ChatItemProps>(({
   handleCancelEdit, 
   handleConfirmDelete, 
   handleCancelDelete,
-  setEditTitle 
+  setEditTitle,
+  sidebarClose
 }) => {
   const handleFormSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
@@ -170,6 +173,7 @@ const ChatItem = memo<ChatItemProps>(({
         href={`/c/${chat.id}`}
         className="flex flex-1 flex-col items-start"
         prefetch={false}
+        onClick={() => sidebarClose(false)}
       >
         <span className="line-clamp-1 text-base font-normal">
           {chat.title || "Untitled Chat"}
@@ -247,7 +251,8 @@ export function SimpleHistory() {
   const [editTitle, setEditTitle] = useState<string>("")
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const router = useRouter()
-
+  
+  const { setOpenMobile } = useSidebar()
   const { chats, updateTitle, deleteChat } = useChats()
   const { deleteMessages } = useMessages()
   const { chatId } = useChatSession()
@@ -325,6 +330,7 @@ export function SimpleHistory() {
       handleConfirmDelete={handleConfirmDelete}
       handleCancelDelete={handleCancelDelete}
       setEditTitle={setEditTitle}
+      sidebarClose={setOpenMobile}
     />
   ), [
     editingId,
