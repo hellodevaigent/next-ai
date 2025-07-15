@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { useChats } from "@/lib/chat-store/chats/provider"
 import { useMessages } from "@/lib/chat-store/messages/provider"
 import { useChatSession } from "@/lib/chat-store/session/provider"
@@ -13,46 +12,271 @@ import {
   X,
 } from "@phosphor-icons/react"
 import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
-import { useCallback, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
+import { useCallback, useMemo, useState, memo } from "react"
 import { formatDate, groupChatsByDate } from "./utils"
 
+// Types
+interface ChatItemProps {
+  chat: Chats
+  editingId: string | null
+  deletingId: string | null
+  editTitle: string
+  handleEdit: (chat: Chats) => void
+  handleDelete: (id: string) => void
+  handleSaveEdit: (id: string) => Promise<void>
+  handleCancelEdit: () => void
+  handleConfirmDelete: (id: string) => Promise<void>
+  handleCancelDelete: () => void
+  setEditTitle: (title: string) => void
+}
+
+interface ChatGroup {
+  name: string
+  chats: Chats[]
+}
+
+// Memoize ChatItem component
+const ChatItem = memo<ChatItemProps>(({ 
+  chat, 
+  editingId, 
+  deletingId, 
+  editTitle, 
+  handleEdit, 
+  handleDelete, 
+  handleSaveEdit, 
+  handleCancelEdit, 
+  handleConfirmDelete, 
+  handleCancelDelete,
+  setEditTitle 
+}) => {
+  const handleFormSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault()
+    handleSaveEdit(chat.id)
+  }, [chat.id, handleSaveEdit])
+
+  const handleDeleteFormSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault()
+    handleConfirmDelete(chat.id)
+  }, [chat.id, handleConfirmDelete])
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditTitle(e.target.value)
+  }, [setEditTitle])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleSaveEdit(chat.id)
+    }
+  }, [chat.id, handleSaveEdit])
+
+  const handleDeleteKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      e.preventDefault()
+      handleCancelDelete()
+    } else if (e.key === "Enter") {
+      e.preventDefault()
+      handleConfirmDelete(chat.id)
+    }
+  }, [chat.id, handleCancelDelete, handleConfirmDelete])
+
+  const handleEditClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    handleEdit(chat)
+  }, [chat, handleEdit])
+
+  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    handleDelete(chat.id)
+  }, [chat.id, handleDelete])
+
+  if (editingId === chat.id) {
+    return (
+      <div className="bg-accent flex items-center justify-between rounded-lg px-2 py-2.5">
+        <form
+          className="flex w-full items-center justify-between"
+          onSubmit={handleFormSubmit}
+        >
+          <Input
+            value={editTitle}
+            onChange={handleInputChange}
+            className="h-8 flex-1"
+            autoFocus
+            onKeyDown={handleKeyDown}
+          />
+          <div className="ml-2 flex gap-1">
+            <Button size="icon" variant="ghost" className="h-8 w-8" type="submit">
+              <Check className="size-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              type="button"
+              onClick={handleCancelEdit}
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+        </form>
+      </div>
+    )
+  }
+  
+  if (deletingId === chat.id) {
+    return (
+      <div className="bg-accent flex items-center justify-between rounded-lg px-2 py-2.5">
+        <form
+          onSubmit={handleDeleteFormSubmit}
+          className="flex w-full items-center justify-between"
+        >
+          <div className="flex flex-1 items-center">
+            <span className="text-base font-normal">{chat.title}</span>
+            <input
+              type="text"
+              className="sr-only"
+              autoFocus
+              onKeyDown={handleDeleteKeyDown}
+            />
+          </div>
+          <div className="ml-2 flex gap-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="text-muted-foreground hover:text-destructive size-8"
+              type="submit"
+            >
+              <Check className="size-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="text-muted-foreground hover:text-destructive size-8"
+              onClick={handleCancelDelete}
+              type="button"
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+        </form>
+      </div>
+    )
+  }
+  
+  return (
+    <div className="group flex items-center justify-between rounded-lg px-2 py-1.5">
+      <Link
+        href={`/c/${chat.id}`}
+        className="flex flex-1 flex-col items-start"
+        prefetch={false}
+      >
+        <span className="line-clamp-1 text-base font-normal">
+          {chat.title || "Untitled Chat"}
+        </span>
+        <span className="mr-2 text-xs font-normal text-gray-500">
+          {formatDate(chat?.created_at)}
+        </span>
+      </Link>
+      <div className="flex items-center">
+        <div className="flex gap-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="text-muted-foreground hover:text-foreground size-8"
+            onClick={handleEditClick}
+            type="button"
+          >
+            <PencilSimple className="size-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="text-muted-foreground hover:text-destructive size-8"
+            onClick={handleDeleteClick}
+            type="button"
+          >
+            <TrashSimple className="size-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+ChatItem.displayName = "ChatItem"
+
+// Empty state component
+const EmptyState = memo(() => (
+  <div className="text-muted-foreground py-4 text-center text-sm">
+    No chat history found.
+  </div>
+))
+
+EmptyState.displayName = "EmptyState"
+
+// Search input component
+const SearchInput = memo<{
+  value: string
+  onChange: (value: string) => void
+}>(({ value, onChange }) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value)
+  }, [onChange])
+
+  return (
+    <div className="border-b bg-sidebar p-4 pb-3 sticky top-0">
+      <div className="relative">
+        <Input
+          placeholder="Search chats..."
+          className="rounded-lg py-1.5 pl-8 text-sm"
+          value={value}
+          onChange={handleChange}
+        />
+        <MagnifyingGlass className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 transform text-gray-400" />
+      </div>
+    </div>
+  )
+})
+
+SearchInput.displayName = "SearchInput"
+
 export function SimpleHistory() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState<string>("")
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editTitle, setEditTitle] = useState("")
+  const [editTitle, setEditTitle] = useState<string>("")
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const params = useParams<{ chatId: string }>()
   const router = useRouter()
 
   const { chats, updateTitle, deleteChat } = useChats()
   const { deleteMessages } = useMessages()
   const { chatId } = useChatSession()
 
-  const handleEdit = useCallback((chat: Chats) => {
+  // Memoize callbacks
+  const handleEdit = useCallback((chat: Chats): void => {
     setEditingId(chat.id)
     setEditTitle(chat.title || "")
   }, [])
 
   const handleSaveEdit = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<void> => {
       setEditingId(null)
       await updateTitle(id, editTitle)
     },
     [editTitle, updateTitle]
   )
 
-  const handleCancelEdit = useCallback(() => {
+  const handleCancelEdit = useCallback((): void => {
     setEditingId(null)
     setEditTitle("")
   }, [])
 
-  const handleDelete = useCallback((id: string) => {
+  const handleDelete = useCallback((id: string): void => {
     setDeletingId(id)
   }, [])
 
   const handleConfirmDelete = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<void> => {
       setDeletingId(null)
       if (id === chatId) {
         router.push("/")
@@ -63,216 +287,77 @@ export function SimpleHistory() {
     [chatId, deleteMessages, deleteChat, router]
   )
 
-  const handleCancelDelete = useCallback(() => {
+  const handleCancelDelete = useCallback((): void => {
     setDeletingId(null)
   }, [])
 
-  // Memoize filtered chats to avoid recalculating on every render
-  const filteredChat = useMemo(() => {
+  // Memoize filtered chats
+  const filteredChat = useMemo((): Chats[] => {
+    if (!searchQuery) return chats
+    
     const query = searchQuery.toLowerCase()
-    return query
-      ? chats.filter((chat) =>
-          (chat.title || "").toLowerCase().includes(query)
-        )
-      : chats
+    return chats.filter((chat) =>
+      (chat.title || "").toLowerCase().includes(query)
+    )
   }, [chats, searchQuery])
 
-  // Group chats by time periods - memoized to avoid recalculation
-  const groupedChats = useMemo(
-    () => groupChatsByDate(chats, searchQuery),
-    [chats, searchQuery]
-  )
+  // Memoize grouped chats
+  const groupedChats = useMemo((): ChatGroup[] => {
+    return groupChatsByDate(filteredChat, searchQuery) ?? []
+  }, [filteredChat, searchQuery])
 
-  // Render chat item
-  const renderChatItem = useCallback(
-    (chat: Chats) => (
-      <div key={chat.id}>
-        <div className="space-y-1.5">
-          {editingId === chat.id ? (
-            <div className="bg-accent flex items-center justify-between rounded-lg px-2 py-2.5">
-              <form
-                className="flex w-full items-center justify-between"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  handleSaveEdit(chat.id)
-                }}
-              >
-                <Input
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="h-8 flex-1"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      handleSaveEdit(chat.id)
-                    }
-                  }}
-                />
-                <div className="ml-2 flex gap-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8"
-                    type="submit"
-                  >
-                    <Check className="size-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8"
-                    type="button"
-                    onClick={handleCancelEdit}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </div>
-              </form>
-            </div>
-          ) : deletingId === chat.id ? (
-            <div className="bg-accent flex items-center justify-between rounded-lg px-2 py-2.5">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  handleConfirmDelete(chat.id)
-                }}
-                className="flex w-full items-center justify-between"
-              >
-                <div className="flex flex-1 items-center">
-                  <span className="text-base font-normal">{chat.title}</span>
-                  <input
-                    type="text"
-                    className="sr-only"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") {
-                        e.preventDefault()
-                        handleCancelDelete()
-                      } else if (e.key === "Enter") {
-                        e.preventDefault()
-                        handleConfirmDelete(chat.id)
-                      }
-                    }}
-                  />
-                </div>
-                <div className="ml-2 flex gap-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-destructive size-8"
-                    type="submit"
-                  >
-                    <Check className="size-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-destructive size-8"
-                    onClick={handleCancelDelete}
-                    type="button"
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </div>
-              </form>
-            </div>
-          ) : (
-            <div className="group flex items-center justify-between rounded-lg px-2 py-1.5">
-              <Link
-                href={`/c/${chat.id}`}
-                key={chat.id}
-                className="flex flex-1 flex-col items-start"
-                prefetch
-              >
-                <span className="line-clamp-1 text-base font-normal">
-                  {chat.title || "Untitled Chat"}
-                </span>
-                <span className="mr-2 text-xs font-normal text-gray-500">
-                  {formatDate(chat?.created_at)}
-                </span>
-              </Link>
-              <div className="flex items-center">
-                <div className="flex gap-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-foreground size-8"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleEdit(chat)
-                    }}
-                    type="button"
-                  >
-                    <PencilSimple className="size-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-destructive size-8"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleDelete(chat.id)
-                    }}
-                    type="button"
-                  >
-                    <TrashSimple className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    ),
-    [
-      params.chatId,
-      editingId,
-      deletingId,
-      editTitle,
-      handleSaveEdit,
-      handleCancelEdit,
-      handleConfirmDelete,
-      handleCancelDelete,
-      handleEdit,
-      handleDelete,
-    ]
-  )
+  // Limit initial render to improve performance
+  const limitedChats = useMemo((): Chats[] => {
+    return searchQuery ? filteredChat : filteredChat.slice(0, 50)
+  }, [filteredChat, searchQuery])
+
+  const renderChatItem = useCallback((chat: Chats) => (
+    <ChatItem
+      key={chat.id}
+      chat={chat}
+      editingId={editingId}
+      deletingId={deletingId}
+      editTitle={editTitle}
+      handleEdit={handleEdit}
+      handleDelete={handleDelete}
+      handleSaveEdit={handleSaveEdit}
+      handleCancelEdit={handleCancelEdit}
+      handleConfirmDelete={handleConfirmDelete}
+      handleCancelDelete={handleCancelDelete}
+      setEditTitle={setEditTitle}
+    />
+  ), [
+    editingId,
+    deletingId,
+    editTitle,
+    handleEdit,
+    handleDelete,
+    handleSaveEdit,
+    handleCancelEdit,
+    handleConfirmDelete,
+    handleCancelDelete,
+  ])
 
   return (
     <>
-      <div className="border-b bg-sidebar p-4 pb-3 sticky top-0">
-        <div className="relative">
-          <Input
-            placeholder="Search chats..."
-            className="rounded-lg py-1.5 pl-8 text-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <MagnifyingGlass className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 transform text-gray-400" />
-        </div>
-      </div>
+      <SearchInput value={searchQuery} onChange={setSearchQuery} />
 
       <div className="flex-1">
         <div className="flex flex-col space-y-6 px-2 pt-4 pb-8">
-          {filteredChat.length === 0 ? (
-            <div className="text-muted-foreground py-4 text-center text-sm">
-              No chat history found.
-            </div>
+          {limitedChats.length === 0 ? (
+            <EmptyState />
           ) : searchQuery ? (
-            // When searching, display a flat list without grouping
             <div className="space-y-2">
-              {filteredChat.map((chat) => renderChatItem(chat))}
+              {limitedChats.map(renderChatItem)}
             </div>
           ) : (
-            // When not searching, display grouped by date
             groupedChats?.map((group) => (
               <div key={group.name} className="space-y-0.5">
                 <h3 className="text-muted-foreground pl-2 text-sm font-medium">
                   {group.name}
                 </h3>
                 <div className="space-y-2">
-                  {group.chats.map((chat) => renderChatItem(chat))}
+                  {group.chats.slice(0, 20).map(renderChatItem)}
                 </div>
               </div>
             ))

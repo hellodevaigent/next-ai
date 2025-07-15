@@ -1,30 +1,18 @@
-// components/project/project-content.tsx
 "use client"
 
-import { DialogDeleteProject } from "@/components/project/dialog-delete-project"
 import { SearchBar } from "@/components/project/search-bar"
-import { useSidebar } from "@/components/ui/sidebar"
 import { useBreakpoint } from "@/hooks/use-breakpoint"
-import useClickOutside from "@/hooks/use-click-outside"
-import { fetchClient } from "@/lib/fetch"
 import { useIndexedDB, useProjectFavorites } from "@/lib/hooks/use-indexeddb"
 import { useTitle } from "@/lib/hooks/use-title"
 import { cn } from "@/lib/utils"
 import {
-  Check,
-  DotsThree,
   FolderIcon,
   FolderPlusIcon,
-  Heart,
-  HeartStraight,
-  PencilSimple,
   StarIcon,
-  Trash,
-  X,
 } from "@phosphor-icons/react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { usePathname, useRouter } from "next/navigation"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { usePathname } from "next/navigation"
+import { useMemo, useState } from "react"
 import { ProjectCardSkeleton } from "../skeleton/project"
 import { DialogCreateProject } from "./dialog-create-project"
 import { ProjectCard } from "./project-card"

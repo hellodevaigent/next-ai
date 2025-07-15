@@ -6,8 +6,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useBreakpoint } from "@/hooks/use-breakpoint"
 import { cn } from "@/lib/utils"
-import { SidebarSimpleIcon } from "@phosphor-icons/react"
+import { SidebarSimpleIcon, XIcon } from "@phosphor-icons/react"
 
 type HeaderSidebarTriggerProps = React.HTMLAttributes<HTMLButtonElement>
 
@@ -16,7 +17,8 @@ export function HeaderSidebarTrigger({
   ...props
 }: HeaderSidebarTriggerProps) {
   const { toggleSidebar, open } = useSidebar()
-
+  const isMobile = useBreakpoint(768)
+  
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -31,7 +33,11 @@ export function HeaderSidebarTrigger({
           )}
           {...props}
         >
-          <SidebarSimpleIcon size={20} />
+          {isMobile ? (
+            <XIcon size={20} />
+          ) : (
+            <SidebarSimpleIcon size={20} />
+          )}
           <span className="sr-only">Toggle sidebar</span>
         </button>
       </TooltipTrigger>

@@ -6,7 +6,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { NotePencilIcon } from "@phosphor-icons/react/dist/ssr"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { SquarePen } from "lucide-react"
@@ -20,7 +19,8 @@ export function ButtonNewChat() {
     () => router.push("/")
   )
 
-  if (pathname === "/") return null
+  if (["", "/projects", "/settings"].includes(pathname)) return null
+  
   return (
     <Tooltip>
       <TooltipTrigger asChild>

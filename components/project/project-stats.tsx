@@ -1,4 +1,3 @@
-// components/project/project-stats.tsx
 "use client"
 
 import { useEffect, useState } from 'react'
