@@ -23,9 +23,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { APP_DOMAIN } from "@/lib/config"
 import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
-import { APP_DOMAIN } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { Check, Copy, Globe, Spinner } from "@phosphor-icons/react"
@@ -101,10 +101,8 @@ export function DialogPublish() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground hover:bg-muted bg-background rounded-full border p-1 transition-colors"
+          <button
+            className="text-muted-foreground hover:text-foreground hover:bg-muted bg-background pointer-events-auto rounded-full border p-1.25 transition-colors"
             onClick={handlePublish}
             disabled={isLoading}
           >
@@ -114,7 +112,7 @@ export function DialogPublish() {
               <Globe className="size-5" />
             )}
             <span className="sr-only">Make public</span>
-          </Button>
+          </button>
         </TooltipTrigger>
         <TooltipContent>
           <p>Make public</p>
@@ -129,7 +127,12 @@ export function DialogPublish() {
         <div className="grid gap-2">
           <div className="flex items-center gap-1">
             <div className="relative flex-1">
-              <Input id="slug" value={publicLink} readOnly className="flex-1" />
+              <Input
+                id="slug"
+                value={publicLink}
+                readOnly
+                className="focus-visible:border-border !border-border !bg-background flex-1 focus:!ring-0 focus-visible:shadow-none"
+              />
               <Button
                 variant="outline"
                 onClick={copyLink}

@@ -21,22 +21,25 @@ import Link from "next/link"
 import { useState } from "react"
 import { AppInfoTrigger } from "../app-info/app-info-trigger"
 import { FeedbackTrigger } from "../feedback/feedback-trigger"
+import { useIsPathExcluded } from "@/lib/hooks/use-path-check"
 
 export function UserMenu() {
   const { user } = useUser()
+  const isExcluded = useIsPathExcluded(["/settings"])
+
   const [isMenuOpen, setMenuOpen] = useState(false)
 
-  if (!user) return null
-
+  if (!user || isExcluded) return null
+  
   return (
     // fix shadcn/ui / radix bug when dialog into dropdown menu
     <DropdownMenu open={isMenuOpen} onOpenChange={setMenuOpen} modal={false}>
       <Tooltip>
         <TooltipTrigger asChild>
           <DropdownMenuTrigger>
-            <Avatar className="bg-background hover:bg-muted">
-              <AvatarImage src={user?.profile_image ?? undefined} />
-              <AvatarFallback>{user?.display_name?.charAt(0)}</AvatarFallback>
+            <Avatar className="!size-7 bg-background hover:bg-muted">
+              <AvatarImage className="!size-7" src={user?.profile_image ?? undefined} />
+              <AvatarFallback className="!size-7">{user?.display_name?.charAt(0)}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
         </TooltipTrigger>
@@ -45,6 +48,7 @@ export function UserMenu() {
       <DropdownMenuContent
         className="w-56"
         align="end"
+        sideOffset={8}
         forceMount
         onCloseAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(e) => {

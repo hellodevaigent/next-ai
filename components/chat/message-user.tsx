@@ -166,8 +166,8 @@ export function MessageUser({
                 alt={user?.display_name}
                 referrerPolicy="no-referrer"
               />
-              <Avatar.Fallback className="bg-background-primary text-text flex size-full items-center justify-center text-[12px] leading-1 font-medium">
-                {user?.display_name?.charAt(0)}
+              <Avatar.Fallback className="bg-background-primary bg-accent-foreground text-accent text-text flex size-full items-center justify-center rounded-full border text-[12px] leading-1 font-medium">
+                {user?.display_name?.charAt(0) ?? "A"}
               </Avatar.Fallback>
             </Avatar.Root>
           </div>

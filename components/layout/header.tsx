@@ -2,36 +2,40 @@
 
 import { HistoryTrigger } from "@/components/history/history-trigger"
 import { ButtonNewChat } from "@/components/layout/button-new-chat"
+import { APP_NAME } from "@/lib/config"
 import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import { useIsPathExcluded } from "@/lib/hooks/use-path-check"
 import { useTitleStore } from "@/lib/store/title-store"
-import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { useUser } from "@/lib/store/user-store/provider"
+import { cn } from "@/lib/utils"
 import { AlignLeft } from "lucide-react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
 import { Skeleton } from "../skeleton/skeleton"
 import { useSidebar } from "../ui/sidebar"
 import { DialogPublish } from "./dialog-publish"
+import { UserMenu } from "./user-menu"
 
 export function Header({ hasSidebar }: { hasSidebar: boolean }) {
   const isMobile = useBreakpoint(768)
   const { user } = useUser()
   const { setOpenMobile } = useSidebar()
   const { title, isLoading } = useTitleStore()
-  const { preferences } = useUserPreferences()
-  const isMultiModelEnabled = preferences.multiModelEnabled
-  const pathname = usePathname()
+  const isExcluded = useIsPathExcluded(["/"])
 
   const isLoggedIn = !!user
-  const isHomePage = /^\/(?:home)?$/.test(pathname)
 
   return (
     <header className="h-app-header bg-background pointer-events-none sticky top-0 right-0 left-0 z-50 border-b">
       <div className="relative mx-auto flex h-full max-w-full items-center justify-between bg-transparent px-4 lg:bg-transparent">
-        <div className="flex flex-1 items-center justify-between md:pl-3">
+        <div
+          className={cn(
+            "flex flex-1 items-center justify-between",
+            hasSidebar && "md:pl-3"
+          )}
+        >
           <div className="-ml-0.5 flex flex-1 items-center gap-2">
             <div className="flex flex-1 items-center gap-2">
-              {isMobile && (
+              {isMobile && hasSidebar && (
                 <button
                   type="button"
                   onClick={() => setOpenMobile(true)}
@@ -40,8 +44,19 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
                   <AlignLeft className="size-5" />
                 </button>
               )}
-              {!isHomePage && (
-                <span className="text-muted-foreground/30 w-4 min-w-4 text-center text-lg select-none md:hidden">
+              {!hasSidebar && (
+                <Link
+                  href="/"
+                  className="pointer-events-auto inline-flex items-center text-xl font-medium tracking-tight transition-opacity duration-200"
+                >
+                  {APP_NAME}
+                </Link>
+              )}
+              {!isExcluded && (
+                <span className={cn(
+                  "text-muted-foreground/30 w-4 min-w-4 text-center text-lg select-none ",
+                  !hasSidebar ? "" : "md:hidden"
+                )}>
                   /
                 </span>
               )}
@@ -66,9 +81,10 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
             </div>
           ) : (
             <div className="pointer-events-auto flex flex-1 items-center justify-end gap-2">
-              {!isMultiModelEnabled && <DialogPublish />}
-              {isMobile && <ButtonNewChat />}
+              <DialogPublish />
+              {!hasSidebar && <ButtonNewChat />}
               {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
+              {!hasSidebar && <UserMenu />}
             </div>
           )}
         </div>

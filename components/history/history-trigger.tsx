@@ -29,7 +29,7 @@ export function HistoryTrigger({
   const defaultTrigger = (
     <button
       className={cn(
-        "text-muted-foreground hover:text-foreground hover:bg-muted bg-background pointer-events-auto rounded-full p-1.5 transition-colors",
+        "text-muted-foreground hover:text-foreground hover:bg-muted bg-background pointer-events-auto rounded-full border p-1.25 transition-colors",
         hasSidebar ? "hidden" : "block",
         classNameTrigger
       )}
@@ -38,7 +38,7 @@ export function HistoryTrigger({
       aria-label="Search"
       tabIndex={isMobile ? -1 : 0}
     >
-      {icon || <ListMagnifyingGlass size={24} />}
+      {icon || <ListMagnifyingGlass size={20} />}
       {label}
     </button>
   )

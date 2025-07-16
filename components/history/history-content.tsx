@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import { useChatPreview } from "@/lib/hooks/use-chat-preview"
 import { useKeyShortcut } from "@/lib/hooks/use-key-shortcut"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
@@ -40,7 +41,16 @@ import {
   useRef,
   useState,
 } from "react"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer"
 import { formatDate, groupChatsByDate } from "./utils"
+import { useSidebar } from "../ui/sidebar"
 
 const ChatFullPreviewPanel = lazy(() =>
   import("./chat-preview-panel").then((module) => ({
@@ -210,17 +220,13 @@ const ChatPreviewPanel = memo<{
       ) : isLoading ? (
         <div className="flex h-full items-center justify-center p-4">
           <div className="text-muted-foreground space-y-2 text-center">
-            <p className="text-sm opacity-60">
-              Loading preview...
-            </p>
+            <p className="text-sm opacity-60">Loading preview...</p>
           </div>
         </div>
       ) : error ? (
         <div className="flex h-full items-center justify-center p-4">
           <div className="text-destructive space-y-2 text-center">
-            <p className="text-sm opacity-60">
-              Error loading preview
-            </p>
+            <p className="text-sm opacity-60">Error loading preview</p>
           </div>
         </div>
       ) : (
@@ -245,11 +251,13 @@ ChatPreviewPanel.displayName = "ChatPreviewPanel"
 const Content = memo<{
   chatHistory: Chats[]
   isDialog?: boolean
+  isMobile?: boolean
   classInput?: string
   onClose?: () => void
-}>(({ chatHistory, classInput, isDialog = true, onClose }) => {
-  const { chatId } = useChatSession()
+}>(({ chatHistory, classInput, isMobile, isDialog = true, onClose }) => {
   const router = useRouter()
+  const { chatId } = useChatSession()
+  const { setOpenMobile } = useSidebar()
   const { preferences } = useUserPreferences()
   const hasPrefetchedRef = useRef(false)
 
@@ -258,8 +266,7 @@ const Content = memo<{
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null)
   const [isPreviewPanelHovered, setIsPreviewPanelHovered] = useState(false)
   const [renderCount, setRenderCount] = useState(INITIAL_RENDER_COUNT)
-  const [searchRenderCount, setSearchRenderCount] =
-    useState(INITIAL_RENDER_COUNT)
+  const [searchRenderCount, setSearchRenderCount] = useState(INITIAL_RENDER_COUNT)
   const [isFullPreview, setIsFullPreview] = useState(false)
 
   const { messages, isLoading, error, fetchPreview } = useChatPreview()
@@ -343,10 +350,12 @@ const Content = memo<{
       if (preferences.showConversationPreviews) {
         setSelectedChatId(chat.id)
       }
-
+      
       if (isDialog && onClose) {
         onClose()
-      }
+      } else (
+        setOpenMobile(false)
+      )
 
       if (searchQuery.trim()) {
         saveSearch(searchQuery.trim())
@@ -360,13 +369,12 @@ const Content = memo<{
       router,
       isDialog,
       onClose,
+      setOpenMobile
     ]
   )
 
-  const activePreviewChatId =
-    hoveredChatId || (isPreviewPanelHovered ? hoveredChatId : null)
-  const showRecentSearches =
-    searchQuery === "" && !isLoadingHistory && searchHistory.length > 0
+  const activePreviewChatId = hoveredChatId || (isPreviewPanelHovered ? hoveredChatId : null)
+  const showRecentSearches = searchQuery === "" && !isLoadingHistory && searchHistory.length > 0
 
   // Show preview only in dialog mode
   const showPreview = isDialog && preferences.showConversationPreviews
@@ -411,7 +419,10 @@ const Content = memo<{
   return (
     <div className="relative flex h-full flex-col">
       {/* Search Input */}
-      <div className="relative">
+      <div className={cn(
+        "relative",
+        // isMobile && "mt-2 mx-2",
+      )}>
         <Input
           placeholder="Search history..."
           value={searchQuery}
@@ -419,6 +430,7 @@ const Content = memo<{
           className={cn(
             "focus:!border-border !h-10 pl-9 focus:!ring-0",
             isDialog && "!bg-popover !rounded-none !border-x-0 !border-t-0",
+            isMobile && "!bg-background !rounded-br-none !rounded-bl-none !rounded-t-xl !border-x-0",
             classInput
           )}
         />
@@ -437,7 +449,8 @@ const Content = memo<{
       <div
         className={cn(
           "flex flex-1 overflow-y-auto",
-          isDialog ? "scrollbar-history h-[calc(100%_-_40px)]" : "h-full"
+          isDialog ? "scrollbar-history h-[calc(100%_-_40px)]" : "h-full",
+          isMobile && "scrollbar-layout",
         )}
       >
         <div
@@ -604,6 +617,7 @@ export function HistoryContent({
   isDialog = true,
   classInput,
 }: HistoryContentProps) {
+  const isMobile = useBreakpoint(768)
   const [internalIsOpen, setInternalIsOpen] = useState(isOpen)
   const actualIsOpen = setIsOpen ? isOpen : internalIsOpen
   const actualSetIsOpen = setIsOpen || setInternalIsOpen
@@ -639,6 +653,43 @@ export function HistoryContent({
           classInput={classInput}
         />
       </div>
+    )
+  }
+
+  // Mobile drawer rendering
+  if (isMobile) {
+    return (
+      <Drawer open={actualIsOpen} onOpenChange={handleOpenChange}>
+        {hasPopover && trigger ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DrawerTrigger asChild>{trigger}</DrawerTrigger>
+            </TooltipTrigger>
+            <TooltipContent>History ⌘+K</TooltipContent>
+          </Tooltip>
+        ) : (
+          trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>
+        )}
+
+        <DrawerContent className="h-[85vh] max-h-[85vh]" disableTopLine={true}>
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>Chat History</DrawerTitle>
+            <DrawerDescription>
+              Search through your past conversations
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div className="flex h-full flex-col overflow-hidden">
+            <Content
+              chatHistory={chatHistory}
+              isDialog={false}
+              isMobile={true}
+              onClose={handleClose}
+              classInput={classInput}
+            />
+          </div>
+        </DrawerContent>
+      </Drawer>
     )
   }
 

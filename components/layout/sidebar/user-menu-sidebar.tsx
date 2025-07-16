@@ -12,91 +12,7 @@ import { cn } from "@/lib/utils"
 import { GithubLogoIcon } from "@phosphor-icons/react"
 import { LogOut, UserIcon } from "lucide-react"
 import Link from "next/link"
-import { memo, useCallback, useMemo } from "react"
-
-const MenuItems = memo(
-  ({
-    onClose,
-    signOut,
-  }: {
-    onClose: () => void
-    signOut: () => Promise<void>
-  }) => (
-    <>
-      <div className="px-1">
-        <Link
-          href="/settings"
-          className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none"
-          onClick={onClose}
-        >
-          <UserIcon className="size-4" />
-          <span>Settings</span>
-        </Link>
-      </div>
-
-      <div className="bg-border my-1 h-px" />
-
-      <div className="px-1">
-        <a
-          href="https://x.com/zoladotchat"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none"
-          onClick={onClose}
-        >
-          <XIcon className="size-4 p-0.5" />
-          <span>@zoladotchat</span>
-        </a>
-
-        <a
-          href="https://github.com/ibelick/zola"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none"
-          onClick={onClose}
-        >
-          <GithubLogoIcon className="size-4" />
-          <span>GitHub</span>
-        </a>
-      </div>
-
-      <div className="bg-border my-1 h-px" />
-
-      <div className="px-1 pb-1">
-        <button
-          className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-red-500 outline-none hover:bg-red-200"
-          onClick={() => {
-            onClose()
-            signOut()
-          }}
-        >
-          <LogOut className="size-5 p-0.5" />
-          <span>Logout</span>
-        </button>
-      </div>
-    </>
-  )
-)
-
-MenuItems.displayName = "MenuItems"
-
-const UserInfo = memo(({ user, isOpen }: { user: any; isOpen: boolean }) => (
-  <span
-    className={cn(
-      "flex w-full items-center justify-between gap-2 text-nowrap duration-200",
-      isOpen ? "opacity-100" : "md:opacity-0"
-    )}
-  >
-    <span className="flex flex-col items-start text-sm">
-      <span>{user?.display_name}</span>
-      <span className="text-muted-foreground -mt-[2px] max-w-full truncate text-xs">
-        {user?.email}
-      </span>
-    </span>
-  </span>
-))
-
-UserInfo.displayName = "UserInfo"
+import { useCallback, useMemo } from "react"
 
 export function UserMenuSidebar() {
   const { user } = useUser()
@@ -117,6 +33,11 @@ export function UserMenuSidebar() {
   }, [toggle, open])
 
   const avatarSize = useMemo(() => (open ? "" : "!size-7"), [open])
+
+  const handleMenuClose = () => {
+    close()
+    setOpenMobile(false)
+  }
 
   if (!user) return null
 
@@ -146,7 +67,19 @@ export function UserMenuSidebar() {
           </AvatarFallback>
         </Avatar>
 
-        <UserInfo user={user} isOpen={open} />
+        <span
+          className={cn(
+            "flex w-full items-center justify-between gap-2 text-nowrap duration-200",
+            open ? "opacity-100" : "md:opacity-0"
+          )}
+        >
+          <span className="flex flex-col items-start text-sm">
+            <span>{user?.display_name}</span>
+            <span className="text-muted-foreground -mt-[2px] max-w-full truncate text-xs">
+              {user?.email}
+            </span>
+          </span>
+        </span>
       </button>
 
       <DropdownPortal
@@ -164,13 +97,57 @@ export function UserMenuSidebar() {
 
         <div className="bg-border my-1 h-px" />
 
-        <MenuItems
-          onClose={() => {
-            close()
-            setOpenMobile(false)
-          }}
-          signOut={handleSignOut}
-        />
+        <div className="px-1">
+          <Link
+            href="/settings"
+            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none"
+            onClick={handleMenuClose}
+          >
+            <UserIcon className="size-4" />
+            <span>Settings</span>
+          </Link>
+        </div>
+
+        <div className="bg-border my-1 h-px" />
+
+        <div className="px-1">
+          <a
+            href="https://x.com/zoladotchat"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none"
+            onClick={handleMenuClose}
+          >
+            <XIcon className="size-4 p-0.5" />
+            <span>@zoladotchat</span>
+          </a>
+
+          <a
+            href="https://github.com/ibelick/zola"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none"
+            onClick={handleMenuClose}
+          >
+            <GithubLogoIcon className="size-4" />
+            <span>GitHub</span>
+          </a>
+        </div>
+
+        <div className="bg-border my-1 h-px" />
+
+        <div className="px-1 pb-1">
+          <button
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-red-500 outline-none hover:bg-red-200"
+            onClick={() => {
+              handleMenuClose()
+              handleSignOut()
+            }}
+          >
+            <LogOut className="size-5 p-0.5" />
+            <span>Logout</span>
+          </button>
+        </div>
       </DropdownPortal>
     </div>
   )

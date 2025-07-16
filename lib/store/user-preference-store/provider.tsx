@@ -26,7 +26,6 @@ interface UserPreferencesContextType {
   setPromptSuggestions: (enabled: boolean) => void
   setShowToolInvocations: (enabled: boolean) => void
   setShowConversationPreviews: (enabled: boolean) => void
-  setMultiModelEnabled: (enabled: boolean) => void
   toggleModelVisibility: (modelId: string) => void
   isModelHidden: (modelId: string) => boolean
   isLoading: boolean
@@ -189,7 +188,7 @@ export function UserPreferencesProvider({
   const updatePreferences = mutation.mutate
 
   const setLayout = (layout: LayoutType) => {
-    if (isAuthenticated || layout === "sidebar") {
+    if (isAuthenticated || layout === "fullscreen") {
       updatePreferences({ layout })
     }
   }
@@ -204,10 +203,6 @@ export function UserPreferencesProvider({
 
   const setShowConversationPreviews = (enabled: boolean) => {
     updatePreferences({ showConversationPreviews: enabled })
-  }
-
-  const setMultiModelEnabled = (enabled: boolean) => {
-    updatePreferences({ multiModelEnabled: enabled })
   }
 
   const toggleModelVisibility = (modelId: string) => {
@@ -232,7 +227,6 @@ export function UserPreferencesProvider({
         setPromptSuggestions,
         setShowToolInvocations,
         setShowConversationPreviews,
-        setMultiModelEnabled,
         toggleModelVisibility,
         isModelHidden,
         isLoading,

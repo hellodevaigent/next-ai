@@ -123,7 +123,7 @@ export function ProjectContent() {
       <div className="h-full w-full flex-1 px-4 py-6">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
           {/* Create New Project Card */}
-          {!showFavorites && (
+          {filteredProjects.length > 0 && !showFavorites && (
             <div
               className="group border-muted-foreground/30 hover:border-primary/50 relative h-28 cursor-pointer rounded-lg border-2 border-dashed transition-all duration-300 hover:shadow-md"
               onClick={() => setIsDialogOpen(true)}

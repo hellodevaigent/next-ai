@@ -257,7 +257,6 @@ CREATE TABLE user_preferences (
   prompt_suggestions BOOLEAN DEFAULT true,
   show_tool_invocations BOOLEAN DEFAULT true,
   show_conversation_previews BOOLEAN DEFAULT true,
-  multi_model_enabled BOOLEAN DEFAULT false,
   hidden_models TEXT[] DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

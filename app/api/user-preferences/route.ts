@@ -37,7 +37,6 @@ export async function GET() {
           prompt_suggestions: true,
           show_tool_invocations: true,
           show_conversation_previews: true,
-          multi_model_enabled: false,
           hidden_models: [],
         })
       }
@@ -54,7 +53,6 @@ export async function GET() {
       prompt_suggestions: data.prompt_suggestions,
       show_tool_invocations: data.show_tool_invocations,
       show_conversation_previews: data.show_conversation_previews,
-      multi_model_enabled: data.multi_model_enabled,
       hidden_models: data.hidden_models || [],
     })
   } catch (error) {
@@ -94,7 +92,6 @@ export async function PUT(request: NextRequest) {
       prompt_suggestions,
       show_tool_invocations,
       show_conversation_previews,
-      multi_model_enabled,
       hidden_models,
     } = body
 
@@ -122,8 +119,6 @@ export async function PUT(request: NextRequest) {
       updateData.show_tool_invocations = show_tool_invocations
     if (show_conversation_previews !== undefined)
       updateData.show_conversation_previews = show_conversation_previews
-    if (multi_model_enabled !== undefined)
-      updateData.multi_model_enabled = multi_model_enabled
     if (hidden_models !== undefined) updateData.hidden_models = hidden_models
 
     // Try to update first, then insert if doesn't exist
@@ -155,7 +150,6 @@ export async function PUT(request: NextRequest) {
       prompt_suggestions: data.prompt_suggestions,
       show_tool_invocations: data.show_tool_invocations,
       show_conversation_previews: data.show_conversation_previews,
-      multi_model_enabled: data.multi_model_enabled,
       hidden_models: data.hidden_models || [],
     })
   } catch (error) {
