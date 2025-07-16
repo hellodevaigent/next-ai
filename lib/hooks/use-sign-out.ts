@@ -14,11 +14,11 @@ export function useSignOut() {
 
   const handleSignOut = useCallback(async () => {
     try {
+      await clearAllIndexedDBStores()
       await resetMessages()
       await resetChats()
       await signOut()
-      await clearAllIndexedDBStores()
-      router.push("/")
+      window.location.href = "/"
     } catch (e) {
       console.error("Sign out failed:", e)
       toast({ title: "Failed to sign out", status: "error" })

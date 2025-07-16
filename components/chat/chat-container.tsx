@@ -202,7 +202,7 @@ export function ChatContainer() {
     !isSubmitting &&
     status === "ready" &&
     messages.length === 0 &&
-    !hasSentFirstMessageRef.current // Don't redirect if we've already sent a message in this session
+    !hasSentFirstMessageRef.current
   ) {
     return redirect("/")
   }

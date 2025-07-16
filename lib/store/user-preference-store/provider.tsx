@@ -133,7 +133,7 @@ export function UserPreferencesProvider({
           return getLocalStoragePreferences()
         }
       },
-      enabled: typeof window !== "undefined",
+      enabled: typeof window !== "undefined" && isAuthenticated, 
       staleTime: 1000 * 60 * 5, // 5 minutes
       retry: (failureCount, error) => {
         // Only retry for authenticated users and network errors

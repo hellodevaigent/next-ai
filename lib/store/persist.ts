@@ -68,7 +68,12 @@ if (isClient) {
 
   checkRequest.onsuccess = () => {
     const db = checkRequest.result
-    if (db.version > DB_VERSION) {
+    const existingStores = Array.from(db.objectStoreNames)
+    const missingStores = ALL_STORES.some(
+      (store) => !existingStores.includes(store)
+    )
+
+    if (db.version > DB_VERSION || missingStores) {
       db.close()
       const deleteRequest = indexedDB.deleteDatabase(DB_NAME)
       deleteRequest.onsuccess = () => {
