@@ -209,13 +209,6 @@ const ChatContent = memo<ChatContentProps>(
 
 ChatContent.displayName = "ChatContent"
 
-// Loading fallback component
-const LoadingFallback = memo(() => (
-  <div className="h-10 w-full animate-pulse rounded bg-gray-200" />
-))
-
-LoadingFallback.displayName = "LoadingFallback"
-
 // History loading fallback
 const HistoryLoadingFallback = memo(() => (
   <div className="p-4 text-center text-sm text-gray-500">
@@ -359,9 +352,7 @@ export function AppSidebar() {
 
       {!showHistory && (
         <SidebarFooter className="p-2">
-          <Suspense fallback={<LoadingFallback />}>
-            <UserMenuSidebar />
-          </Suspense>
+          <UserMenuSidebar />
         </SidebarFooter>
       )}
     </Sidebar>

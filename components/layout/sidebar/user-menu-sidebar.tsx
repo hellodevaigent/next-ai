@@ -17,8 +17,8 @@ import { useCallback, useMemo } from "react"
 export function UserMenuSidebar() {
   const { user } = useUser()
   const { open, setOpenMobile } = useSidebar()
-  const isMobile = useBreakpoint(768)
   const { handleSignOut } = useSignOut()
+  const isMobile = useBreakpoint(768)
 
   const { isOpen, position, mounted, triggerRef, menuRef, toggle, close } =
     useDropdown({
@@ -47,7 +47,7 @@ export function UserMenuSidebar() {
         ref={triggerRef as React.RefObject<HTMLButtonElement>}
         onClick={handleToggle}
         className={cn(
-          "text-primary relative inline-flex w-full items-center gap-2 rounded-md bg-transparent p-1 text-sm transition-all duration-300",
+          "text-primary relative inline-flex w-full cursor-pointer items-center gap-2 rounded-md p-1 text-sm transition-all duration-300",
           isOpen ? "bg-accent/50 ring-border ring-1" : "",
           open ? "hover:bg-accent/80 hover:text-foreground" : ""
         )}

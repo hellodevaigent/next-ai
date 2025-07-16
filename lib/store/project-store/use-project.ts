@@ -133,7 +133,6 @@ export function useProjectFavorites() {
   };
 }
 
-
 export function useSearchHistory() {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
