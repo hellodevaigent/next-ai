@@ -1,6 +1,6 @@
 "use client"
 
-import { useBreakpoint } from "@/hooks/use-breakpoint"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import { FeedbackForm } from "@/components/common/feedback-form"
 import {
   MorphingPopover,

@@ -2,10 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/toast"
-import { useChats } from "@/lib/chat-store/chats/provider"
-import { useMessages } from "@/lib/chat-store/messages/provider"
-import { clearAllIndexedDBStores } from "@/lib/chat-store/persist"
-import { useUser } from "@/lib/user-store/provider"
+import { useChats } from "@/lib/store/chat-store/chats/provider"
+import { useMessages } from "@/lib/store/chat-store/messages/provider"
+import { clearAllIndexedDBStores } from "@/lib/store/chat-store/persist"
+import { useUser } from "@/lib/store/user-store/provider"
 import { SignOut } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"
 

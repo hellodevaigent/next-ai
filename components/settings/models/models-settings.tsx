@@ -1,9 +1,9 @@
 "use client"
 
-import { useModel } from "@/lib/model-store/provider"
+import { useModel } from "@/lib/store/model-store/provider"
 import { ModelConfig } from "@/lib/models/types"
 import { PROVIDERS } from "@/lib/providers"
-import { useUserPreferences } from "@/lib/user-preference-store/provider"
+import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import {
   DotsSixVerticalIcon,
   MinusIcon,

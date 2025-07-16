@@ -1,7 +1,7 @@
 "use client"
 
 import { MultiChat } from "@/components/multi-chat/multi-chat"
-import { useUserPreferences } from "@/lib/user-preference-store/provider"
+import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { Chat } from "./chat"
 
 export function ChatContainer() {

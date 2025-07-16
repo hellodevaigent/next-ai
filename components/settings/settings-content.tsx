@@ -3,7 +3,7 @@
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { useTitle } from "@/lib/hooks/use-title"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
-import { useUser } from "@/lib/user-store/provider"
+import { useUser } from "@/lib/store/user-store/provider"
 import { cn, isDev } from "@/lib/utils"
 import {
   CubeIcon,

@@ -1,4 +1,3 @@
-// app/providers/user-provider.tsx
 "use client"
 
 import {
@@ -6,7 +5,7 @@ import {
   signOutUser,
   subscribeToUserUpdates,
   updateUserProfile,
-} from "@/lib/user-store/api"
+} from "@/lib/store/user-store/api"
 import type { UserProfile } from "@/lib/user/types"
 import { createContext, useContext, useEffect, useState } from "react"
 

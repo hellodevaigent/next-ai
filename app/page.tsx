@@ -1,6 +1,6 @@
 import { ChatContainer } from "@/components/chat/chat-container"
 import { LayoutApp } from "@/components/layout/layout-app"
-import { MessagesProvider } from "@/lib/chat-store/messages/provider"
+import { MessagesProvider } from "@/lib/store/chat-store/messages/provider"
 
 export const dynamic = "force-dynamic"
 

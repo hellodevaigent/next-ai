@@ -23,8 +23,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useBreakpoint } from "@/hooks/use-breakpoint"
-import { useChatSession } from "@/lib/chat-store/session/provider"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import { useChatSession } from "@/lib/store/chat-store/session/provider"
 import { APP_DOMAIN } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"

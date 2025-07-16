@@ -6,7 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useBreakpoint } from "@/hooks/use-breakpoint"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import { cn } from "@/lib/utils"
 import { SidebarSimpleIcon, XIcon } from "@phosphor-icons/react"
 

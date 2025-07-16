@@ -1,16 +1,12 @@
 "use client"
 
 import { SearchBar } from "@/components/project/search-bar"
-import { useBreakpoint } from "@/hooks/use-breakpoint"
-import { useIndexedDB, useProjectFavorites } from "@/lib/hooks/use-indexeddb"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import { useProjectFavorites } from "@/lib/store/project-store/use-project"
 import { useTitle } from "@/lib/hooks/use-title"
+import { useProjects } from "@/lib/store/project-store/provider"
 import { cn } from "@/lib/utils"
-import {
-  FolderIcon,
-  FolderPlusIcon,
-  StarIcon,
-} from "@phosphor-icons/react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { FolderIcon, FolderPlusIcon, StarIcon } from "@phosphor-icons/react"
 import { usePathname } from "next/navigation"
 import { useMemo, useState } from "react"
 import { ProjectCardSkeleton } from "../skeleton/project"
@@ -26,34 +22,14 @@ export type Project = {
 
 export function ProjectContent() {
   useTitle(null, "Projects")
+  const { projects, isLoading } = useProjects()
+  const { favorites, toggleFavorite } = useProjectFavorites()
+  const pathname = usePathname()
+  const isMobile = useBreakpoint(1024)
+
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [showFavorites, setShowFavorites] = useState(false)
-  const pathname = usePathname()
-  const queryClient = useQueryClient()
-  const isMobile = useBreakpoint(1024)
-  const { isInitialized, indexedDBStore } = useIndexedDB()
-  const { favorites, toggleFavorite } = useProjectFavorites()
-
-  const { data: projects = [], isLoading } = useQuery<Project[]>({
-    queryKey: ["projects"],
-    queryFn: async () => {
-      const response = await fetch("/api/projects")
-      if (!response.ok) {
-        throw new Error("Failed to fetch projects")
-      }
-      const data = await response.json()
-
-      // Sync with IndexedDB
-      if (isInitialized) {
-        data.forEach(async (project: Project) => {
-          await indexedDBStore.saveProject(project)
-        })
-      }
-
-      return data
-    },
-  })
 
   const filteredProjects = useMemo(() => {
     let filtered = projects
@@ -80,7 +56,10 @@ export function ProjectContent() {
       if (!aIsFavorite && bIsFavorite) return 1
 
       // If both are favorites or both are not favorites, sort by creation date
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      return (
+        (b.created_at ? new Date(b.created_at).getTime() : 0) -
+        (a.created_at ? new Date(a.created_at).getTime() : 0)
+      )
     })
   }, [projects, searchQuery, showFavorites, favorites])
 
@@ -164,10 +143,9 @@ export function ProjectContent() {
             filteredProjects.map((project, index) => (
               <ProjectCard
                 key={project.id}
-                project={project}
+                project={project as Project}
                 index={index}
                 pathname={pathname}
-                queryClient={queryClient}
                 isMobile={isMobile}
                 isFavorite={favorites.includes(project.id)}
                 onToggleFavorite={toggleFavorite}

@@ -5,9 +5,9 @@ import { Conversation } from "@/components/chat/conversation"
 import { ProjectChatItem } from "@/components/project/project-chat-item"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/toast"
-import { useBreakpoint } from "@/hooks/use-breakpoint"
-import { useChats } from "@/lib/chat-store/chats/provider"
-import { useMessages } from "@/lib/chat-store/messages/provider"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import { useChats } from "@/lib/store/chat-store/chats/provider"
+import { useMessages } from "@/lib/store/chat-store/messages/provider"
 import { MESSAGE_MAX_LENGTH, SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
 import { Attachment } from "@/lib/file-handling"
 import { useChatOperations } from "@/lib/hooks/use-chat-operations"
@@ -15,11 +15,10 @@ import { useFileUpload } from "@/lib/hooks/use-file-upload"
 import { useModel } from "@/lib/hooks/use-model"
 import { useTitle } from "@/lib/hooks/use-title"
 import { API_ROUTE_CHAT } from "@/lib/routes"
-import { useUser } from "@/lib/user-store/provider"
+import { useUser } from "@/lib/store/user-store/provider"
 import { cn } from "@/lib/utils"
 import { useChat } from "@ai-sdk/react"
 import { ArrowLeftIcon, ChatCircleIcon } from "@phosphor-icons/react"
-import { useQuery } from "@tanstack/react-query"
 import { AnimatePresence, motion } from "motion/react"
 import { usePathname } from "next/navigation"
 import { useCallback, useMemo, useState } from "react"
@@ -28,13 +27,7 @@ import {
   ProjectChatSkeleton,
 } from "../skeleton/project"
 import { Skeleton } from "../skeleton/skeleton"
-
-type Project = {
-  id: string
-  name: string
-  user_id: string
-  created_at: string
-}
+import { useProjects } from "@/lib/store/project-store/provider"
 
 type ProjectViewProps = {
   projectId: string
@@ -61,16 +54,8 @@ export function ProjectView({ projectId }: ProjectViewProps) {
   } = useFileUpload()
 
   // Fetch project details
-  const { data: project, isLoading } = useQuery<Project>({
-    queryKey: ["project", projectId],
-    queryFn: async () => {
-      const response = await fetch(`/api/projects/${projectId}`)
-      if (!response.ok) {
-        throw new Error("Failed to fetch project")
-      }
-      return response.json()
-    },
-  })
+  const { getProjectById, isLoading } = useProjects()
+  const project = getProjectById(projectId) 
 
   useTitle(null, `Project #${project?.name || ""}`)
 

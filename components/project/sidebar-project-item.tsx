@@ -1,7 +1,7 @@
 "use client"
 
-import { useBreakpoint } from "@/hooks/use-breakpoint"
-import useClickOutside from "@/hooks/use-click-outside"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import useClickOutside from "@/lib/hooks/use-click-outside"
 import { fetchClient } from "@/lib/fetch"
 import { cn } from "@/lib/utils"
 import { Check, FolderIcon, X } from "@phosphor-icons/react"

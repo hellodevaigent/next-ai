@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Chats } from "@/lib/chat-store/types"
+import { Chats } from "@/lib/store/chat-store/types"
 import {
   Check,
   MagnifyingGlass,

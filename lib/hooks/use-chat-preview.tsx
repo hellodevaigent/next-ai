@@ -2,7 +2,7 @@ import {
   cacheMessages,
   getCachedMessages,
   getMessagesFromDb,
-} from "@/lib/chat-store/messages/api"
+} from "@/lib/store/chat-store/messages/api"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 interface ChatMessage {

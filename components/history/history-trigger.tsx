@@ -1,9 +1,9 @@
 "use client"
 
-import { useBreakpoint } from "@/hooks/use-breakpoint"
-import { useChats } from "@/lib/chat-store/chats/provider"
-import { useMessages } from "@/lib/chat-store/messages/provider"
-import { useChatSession } from "@/lib/chat-store/session/provider"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import { useChats } from "@/lib/store/chat-store/chats/provider"
+import { useMessages } from "@/lib/store/chat-store/messages/provider"
+import { useChatSession } from "@/lib/store/chat-store/session/provider"
 import { cn } from "@/lib/utils"
 import { ListMagnifyingGlass } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"

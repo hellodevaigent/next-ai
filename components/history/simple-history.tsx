@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useChats } from "@/lib/chat-store/chats/provider"
-import { useMessages } from "@/lib/chat-store/messages/provider"
-import { useChatSession } from "@/lib/chat-store/session/provider"
-import { Chats } from "@/lib/chat-store/types"
+import { useChats } from "@/lib/store/chat-store/chats/provider"
+import { useMessages } from "@/lib/store/chat-store/messages/provider"
+import { useChatSession } from "@/lib/store/chat-store/session/provider"
+import { Chats } from "@/lib/store/chat-store/types"
 import {
   Check,
   MagnifyingGlass,

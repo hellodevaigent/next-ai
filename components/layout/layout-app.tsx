@@ -2,7 +2,7 @@
 
 import { Header } from "@/components/layout/header"
 import { AppSidebar } from "@/components/layout/sidebar/app-sidebar"
-import { useUserPreferences } from "@/lib/user-preference-store/provider"
+import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 
 export function LayoutApp({ children }: { children: React.ReactNode }) {
   const { preferences } = useUserPreferences()

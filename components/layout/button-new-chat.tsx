@@ -1,6 +1,6 @@
 "use client"
 
-import { useKeyShortcut } from "@/hooks/use-key-shortcut"
+import { useKeyShortcut } from "@/lib/hooks/use-key-shortcut"
 import {
   Tooltip,
   TooltipContent,

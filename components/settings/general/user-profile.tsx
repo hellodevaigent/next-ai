@@ -1,7 +1,7 @@
 "use client"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useUser } from "@/lib/user-store/provider"
+import { useUser } from "@/lib/store/user-store/provider"
 import { User } from "@phosphor-icons/react"
 
 export function UserProfile() {

@@ -9,16 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { fetchClient } from "@/lib/fetch"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { usePathname, useRouter } from "next/navigation"
-
-type Project = {
-  id: string
-  name: string
-  user_id: string
-  created_at: string
-}
+import { useProjects } from "@/lib/store/project-store/provider"
+import { Project } from "@/lib/store/project-store/types"
+import { useRouter, usePathname } from "next/navigation"
+import { useState } from "react"
 
 type DialogDeleteProjectProps = {
   isOpen: boolean
@@ -26,42 +20,22 @@ type DialogDeleteProjectProps = {
   project: Project
 }
 
-export function DialogDeleteProject({
-  isOpen,
-  setIsOpen,
-  project,
-}: DialogDeleteProjectProps) {
-  const queryClient = useQueryClient()
+export function DialogDeleteProject({ isOpen, setIsOpen, project }: DialogDeleteProjectProps) {
+  const { deleteProject } = useProjects()
+  const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
 
-  const deleteProjectMutation = useMutation({
-    mutationFn: async (projectId: string) => {
-      const response = await fetchClient(`/api/projects/${projectId}`, {
-        method: "DELETE",
-      })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to delete project")
-      }
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true)
+    await deleteProject(project.id)
+    setIsDeleting(false)
+    setIsOpen(false)
 
-      return response.json()
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] })
-      queryClient.invalidateQueries({ queryKey: ["chats"] })
-      setIsOpen(false)
-
-      // If we're currently viewing this project, redirect to home
-      if (pathname.startsWith(`/p/${project.id}`)) {
-        router.push("/")
-      }
-    },
-  })
-
-  const handleConfirmDelete = () => {
-    deleteProjectMutation.mutate(project.id)
+    if(pathname.includes(`/p/${project.id}`)) {
+        router.push('/')
+    }
   }
 
   return (
@@ -70,27 +44,16 @@ export function DialogDeleteProject({
         <DialogHeader>
           <DialogTitle>Delete Project</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete &quot;{project.name}&quot;? This
-            action cannot be undone and will also delete all conversations in
-            this project.
+            Are you sure you want to delete "{project.name}"? This action cannot
+            be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsOpen(false)}
-            disabled={deleteProjectMutation.isPending}
-          >
+          <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isDeleting}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleConfirmDelete}
-            disabled={deleteProjectMutation.isPending}
-          >
-            {deleteProjectMutation.isPending ? "Deleting..." : "Delete Project"}
+          <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting}>
+            {isDeleting ? "Deleting..." : "Delete Project"}
           </Button>
         </DialogFooter>
       </DialogContent>

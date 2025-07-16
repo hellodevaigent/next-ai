@@ -1,7 +1,7 @@
 "use client"
 
 import { Switch } from "@/components/ui/switch"
-import { useUserPreferences } from "@/lib/user-preference-store/provider"
+import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 
 export function InteractionPreferences() {
   const {

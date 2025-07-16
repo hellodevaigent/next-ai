@@ -1,6 +1,6 @@
 import { LayoutApp } from "@/components/layout/layout-app"
 import { SettingsContent } from "@/components/settings/settings-content"
-import { MessagesProvider } from "@/lib/chat-store/messages/provider"
+import { MessagesProvider } from "@/lib/store/chat-store/messages/provider"
 import { metadata as meta } from "@/lib/metadata"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/server"

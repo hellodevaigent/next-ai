@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { MagnifyingGlass, Clock, X, Trash } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
-import { useSearchHistory } from '@/lib/hooks/use-indexeddb'
+import { useSearchHistory } from '@/lib/store/project-store/use-project'
 
 interface SearchBarProps {
   onSearch: (query: string) => void
@@ -32,7 +32,7 @@ export function SearchBar({ onSearch, placeholder = "Search projects...", classN
   const handleSearch = async (searchQuery: string) => {
     const trimmedQuery = searchQuery.trim()
     if (trimmedQuery) {
-      await saveSearch(trimmedQuery, 0)
+      await saveSearch(trimmedQuery)
       onSearch(trimmedQuery)
       setQuery(trimmedQuery)
       setIsOpen(false)

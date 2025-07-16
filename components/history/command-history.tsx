@@ -1,6 +1,6 @@
 "use client"
 
-import { useKeyShortcut } from "@/hooks/use-key-shortcut"
+import { useKeyShortcut } from "@/lib/hooks/use-key-shortcut"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -24,10 +24,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useChatSession } from "@/lib/chat-store/session/provider"
-import type { Chats } from "@/lib/chat-store/types"
+import { useChatSession } from "@/lib/store/chat-store/session/provider"
+import type { Chats } from "@/lib/store/chat-store/types"
 import { useChatPreview } from "@/lib/hooks/use-chat-preview"
-import { useUserPreferences } from "@/lib/user-preference-store/provider"
+import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { cn } from "@/lib/utils"
 import { Check, PencilSimple, TrashSimple, X } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"

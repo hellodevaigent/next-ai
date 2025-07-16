@@ -1,4 +1,3 @@
-// @todo: move in /lib/user/api.ts
 import { toast } from "@/components/ui/toast"
 import { createClient } from "@/lib/supabase/client"
 import type { UserProfile } from "@/lib/user/types"

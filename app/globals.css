@@ -89,6 +89,7 @@
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
+  --input-1: oklch(0.92 0.004 286.32);
   --ring: oklch(0.705 0.015 286.067);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -125,6 +126,7 @@
   --destructive-foreground: oklch(0.95 0.01 20);
   --border: oklch(100% 0 0 / 8%);
   --input: oklch(0.35 0.006 286.033);
+  --input-1: oklch(0.29 0 0 / 1);
   --ring: oklch(0.442 0.017 285.786);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
@@ -142,10 +144,32 @@
 }
 
 @layer base {
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px var(--input) inset !important;
+    -webkit-text-fill-color: var(--primary) !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
   * {
     @apply border-border outline-ring/50;
     scrollbar-width: thin;
-    
   }
   body {
     @apply bg-background text-foreground;
@@ -158,7 +182,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-sidebar::-webkit-scrollbar,
   .scrollbar-layout::-webkit-scrollbar {
     display: none;
@@ -177,17 +201,21 @@ code {
 }
 
 .scrollbar-sidebar {
-  scrollbar-color: var(--scrollbar-thumb, var(--border)) var(--scrollbar-track, var(--sidebar));
+  scrollbar-color: var(--scrollbar-thumb, var(--border))
+    var(--scrollbar-track, var(--sidebar));
 }
 .scrollbar-sidebar:hover {
-  scrollbar-color: var(--scrollbar-thumb, var(--ring)) var(--scrollbar-track, var(--sidebar));
+  scrollbar-color: var(--scrollbar-thumb, var(--ring))
+    var(--scrollbar-track, var(--sidebar));
 }
 
 .scrollbar-layout {
-  scrollbar-color: var(--scrollbar-thumb, var(--border)) var(--scrollbar-track, var(--background));
+  scrollbar-color: var(--scrollbar-thumb, var(--border))
+    var(--scrollbar-track, var(--background));
 }
 .scrollbar-layout:hover {
-  scrollbar-color: var(--scrollbar-thumb, var(--ring)) var(--scrollbar-track, var(--background));
+  scrollbar-color: var(--scrollbar-thumb, var(--ring))
+    var(--scrollbar-track, var(--background));
 }
 
 .scrollbar-hidden {
@@ -208,11 +236,19 @@ code {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -400% 0; }
-  100% { background-position: 400% 0; }
+  0% {
+    background-position: -400% 0;
+  }
+  100% {
+    background-position: 400% 0;
+  }
 }

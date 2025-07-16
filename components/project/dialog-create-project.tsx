@@ -10,8 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { fetchClient } from "@/lib/fetch"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Label } from "@/components/ui/label"
+import { useProjects } from "@/lib/store/project-store/provider"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -20,87 +20,63 @@ type DialogCreateProjectProps = {
   setIsOpen: (isOpen: boolean) => void
 }
 
-type CreateProjectData = {
-  id: string
-  name: string
-  user_id: string
-  created_at: string
-}
-
 export function DialogCreateProject({
   isOpen,
   setIsOpen,
 }: DialogCreateProjectProps) {
-  const [projectName, setProjectName] = useState("")
-  const queryClient = useQueryClient()
+  const { createProject } = useProjects()
+  const [name, setName] = useState("")
+  const [isCreating, setIsCreating] = useState(false)
   const router = useRouter()
-  const createProjectMutation = useMutation({
-    mutationFn: async (name: string): Promise<CreateProjectData> => {
-      const response = await fetchClient("/api/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name }),
-      })
 
-      if (!response.ok) {
-        throw new Error("Failed to create project")
-      }
+  const handleCreateProject = async () => {
+    if (!name.trim()) return
 
-      return response.json()
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] })
-      // router.push(`/p/${data.id}`)
-      setProjectName("")
+    setIsCreating(true)
+    const newProject = await createProject(name.trim())
+    setIsCreating(false)
+
+    if (newProject) {
       setIsOpen(false)
-    },
-  })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (projectName.trim()) {
-      createProjectMutation.mutate(projectName.trim())
+      setName("")
+      router.push(`/p/${newProject.id}`)
     }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
-            <DialogDescription>
-              Enter a name for your new project.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Input
-              placeholder="Project name"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              autoFocus
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={!projectName.trim() || createProjectMutation.isPending}
-            >
-              {createProjectMutation.isPending
-                ? "Creating..."
-                : "Create Project"}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogHeader>
+          <DialogTitle>Create New Project</DialogTitle>
+          <DialogDescription>
+            Enter a name for your new project.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="col-span-3"
+            placeholder="My awesome project"
+            onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
+          />
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => setIsOpen(false)}
+            disabled={isCreating}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreateProject}
+            disabled={isCreating || !name.trim()}
+          >
+            {isCreating ? "Creating..." : "Create Project"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

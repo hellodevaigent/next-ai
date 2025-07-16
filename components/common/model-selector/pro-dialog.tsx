@@ -1,6 +1,6 @@
 "use client"
 
-import { useBreakpoint } from "@/hooks/use-breakpoint"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/drawer"
 import { APP_NAME } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
-import { useUser } from "@/lib/user-store/provider"
+import { useUser } from "@/lib/store/user-store/provider"
 import { useMutation } from "@tanstack/react-query"
 import Image from "next/image"
 

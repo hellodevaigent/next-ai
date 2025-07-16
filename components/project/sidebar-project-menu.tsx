@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useBreakpoint } from "@/hooks/use-breakpoint"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import { cn } from "@/lib/utils"
 import { DotsThree, PencilSimple, Trash } from "@phosphor-icons/react"
 import { useState } from "react"

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useChats } from '@/lib/chat-store/chats/provider'
+import { useChats } from '@/lib/store/chat-store/chats/provider'
 
 export function useChatLoading(
   chatId: string | null, 

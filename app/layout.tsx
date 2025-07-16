@@ -1,12 +1,12 @@
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { ChatsProvider } from "@/lib/chat-store/chats/provider"
-import { ChatSessionProvider } from "@/lib/chat-store/session/provider"
-import { ModelProvider } from "@/lib/model-store/provider"
+import { ChatsProvider } from "@/lib/store/chat-store/chats/provider"
+import { ChatSessionProvider } from "@/lib/store/chat-store/session/provider"
+import { ModelProvider } from "@/lib/store/model-store/provider"
+import { UserPreferencesProvider } from "@/lib/store/user-preference-store/provider"
+import { UserProvider } from "@/lib/store/user-store/provider"
 import { TanstackQueryProvider } from "@/lib/tanstack-query/tanstack-query-provider"
-import { UserPreferencesProvider } from "@/lib/user-preference-store/provider"
-import { UserProvider } from "@/lib/user-store/provider"
 import { getUserProfile } from "@/lib/user/api"
 import type { Metadata } from "next"
 import { ThemeProvider } from "next-themes"
@@ -15,6 +15,7 @@ import Script from "next/script"
 import { LayoutClient } from "./layout-client"
 import "./globals.css"
 import "keen-slider/keen-slider.min.css"
+import { ProjectsProvider } from "@/lib/store/project-store/provider"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,29 +58,31 @@ export default async function RootLayout({
           <UserProvider initialUser={userProfile}>
             <ModelProvider>
               <ChatsProvider userId={userProfile?.id}>
-                <ChatSessionProvider>
-                  <UserPreferencesProvider
-                    userId={userProfile?.id}
-                    initialPreferences={userProfile?.preferences}
-                  >
-                    <TooltipProvider
-                      delayDuration={200}
-                      skipDelayDuration={500}
+                <ProjectsProvider userId={userProfile?.id}>
+                  <ChatSessionProvider>
+                    <UserPreferencesProvider
+                      userId={userProfile?.id}
+                      initialPreferences={userProfile?.preferences}
                     >
-                      <ThemeProvider
-                        attribute="class"
-                        defaultTheme="light"
-                        enableSystem
-                        disableTransitionOnChange
+                      <TooltipProvider
+                        delayDuration={200}
+                        skipDelayDuration={500}
                       >
-                        <SidebarProvider defaultOpen>
-                          <Toaster position="top-center" />
-                          {children}
-                        </SidebarProvider>
-                      </ThemeProvider>
-                    </TooltipProvider>
-                  </UserPreferencesProvider>
-                </ChatSessionProvider>
+                        <ThemeProvider
+                          attribute="class"
+                          defaultTheme="light"
+                          enableSystem
+                          disableTransitionOnChange
+                        >
+                          <SidebarProvider defaultOpen>
+                            <Toaster position="top-center" />
+                            {children}
+                          </SidebarProvider>
+                        </ThemeProvider>
+                      </TooltipProvider>
+                    </UserPreferencesProvider>
+                  </ChatSessionProvider>
+                </ProjectsProvider>
               </ChatsProvider>
             </ModelProvider>
           </UserProvider>

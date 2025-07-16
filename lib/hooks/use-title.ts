@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useTitleStore } from "@/lib/title-store";
-import { getChat } from "../chat-store/chats/api";
+import { useTitleStore } from "@/lib/store/title-store";
+import { getChat } from "../store/chat-store/chats/api";
 
 const titleCache = new Map<string, string | null>();
 

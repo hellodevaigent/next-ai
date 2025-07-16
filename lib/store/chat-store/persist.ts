@@ -8,13 +8,26 @@ import {
   setMany,
 } from "idb-keyval"
 
+const STORE_NAMES = {
+  CHATS: "chats",
+  MESSAGES: "messages", 
+  SYNC: "sync",
+  PROJECTS: "projects",
+  FAVORITES: "favorites",
+  SEARCH_HISTORY: "searchHistory"
+} as const;
+
+export type StoreName = typeof STORE_NAMES[keyof typeof STORE_NAMES];
+
+const ALL_STORES = Object.values(STORE_NAMES);
+
 let dbInitPromise: Promise<void> | null = null
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const stores: Record<string, any> = {}
 
 const isClient = typeof window !== "undefined"
-const DB_NAME = "zola-db"
-const DB_VERSION = 2
+const DB_NAME = "next-db"
+const DB_VERSION = 1
 
 let storesReady = false
 let storesReadyResolve: () => void = () => {}
@@ -30,10 +43,11 @@ function initDatabase() {
 
     request.onupgradeneeded = () => {
       const db = request.result
-      if (!db.objectStoreNames.contains("chats")) db.createObjectStore("chats")
-      if (!db.objectStoreNames.contains("messages"))
-        db.createObjectStore("messages")
-      if (!db.objectStoreNames.contains("sync")) db.createObjectStore("sync")
+      ALL_STORES.forEach(storeName => {
+        if (!db.objectStoreNames.contains(storeName)) {
+          db.createObjectStore(storeName)
+        }
+      });
     }
 
     request.onsuccess = () => {
@@ -98,12 +112,11 @@ function initDatabaseAndStores(): void {
                   reopenRequest.result.objectStoreNames
                 )
 
-                if (newObjectStores.includes("chats"))
-                  stores.chats = createStore(DB_NAME, "chats")
-                if (newObjectStores.includes("messages"))
-                  stores.messages = createStore(DB_NAME, "messages")
-                if (newObjectStores.includes("sync"))
-                  stores.sync = createStore(DB_NAME, "sync")
+                ALL_STORES.forEach(storeName => {
+                  if (newObjectStores.includes(storeName)) {
+                    stores[storeName] = createStore(DB_NAME, storeName)
+                  }
+                });
 
                 storesReady = true
                 storesReadyResolve()
@@ -125,12 +138,11 @@ function initDatabaseAndStores(): void {
         }
 
         // Continue with existing logic for when stores are found
-        if (objectStores.includes("chats"))
-          stores.chats = createStore(DB_NAME, "chats")
-        if (objectStores.includes("messages"))
-          stores.messages = createStore(DB_NAME, "messages")
-        if (objectStores.includes("sync"))
-          stores.sync = createStore(DB_NAME, "sync")
+        ALL_STORES.forEach(storeName => {
+          if (objectStores.includes(storeName)) {
+            stores[storeName] = createStore(DB_NAME, storeName)
+          }
+        });
 
         storesReady = true
         storesReadyResolve()
@@ -160,9 +172,9 @@ export async function ensureDbReady() {
 }
 
 export async function readFromIndexedDB<T>(
-  table: "chats" | "messages" | "sync",
+  table: StoreName,
   key?: string
-): Promise<T | T[]> {
+): Promise<T | T[] | null> {
   await ensureDbReady()
 
   if (!isClient) {
@@ -196,7 +208,7 @@ export async function readFromIndexedDB<T>(
 }
 
 export async function writeToIndexedDB<T extends { id: string | number }>(
-  table: "chats" | "messages" | "sync",
+  table: StoreName,
   data: T | T[]
 ): Promise<void> {
   await ensureDbReady()
@@ -224,8 +236,8 @@ export async function writeToIndexedDB<T extends { id: string | number }>(
 }
 
 export async function deleteFromIndexedDB(
-  table: "chats" | "messages" | "sync",
-  key?: string
+  table: StoreName,
+  key?: string | string[]
 ): Promise<void> {
   await ensureDbReady()
 
@@ -259,7 +271,10 @@ export async function clearAllIndexedDBStores() {
   }
 
   await ensureDbReady()
-  await deleteFromIndexedDB("chats")
-  await deleteFromIndexedDB("messages")
-  await deleteFromIndexedDB("sync")
+
+  for (const storeName of ALL_STORES) {
+    await deleteFromIndexedDB(storeName)
+  }
 }
+
+export { STORE_NAMES };

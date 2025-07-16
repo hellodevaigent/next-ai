@@ -4,9 +4,9 @@ import {
   MessageActions,
   MessageContent,
 } from "@/components/prompt-kit/message"
-import useClickOutside from "@/hooks/use-click-outside"
+import useClickOutside from "@/lib/hooks/use-click-outside"
 import { APP_NAME } from "@/lib/config"
-import { useUserPreferences } from "@/lib/user-preference-store/provider"
+import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { cn } from "@/lib/utils"
 import type { Message as MessageAISDK } from "@ai-sdk/react"
 import { ArrowClockwise, Check, Copy } from "@phosphor-icons/react"
@@ -16,7 +16,7 @@ import { Reasoning } from "./reasoning"
 import { SearchImages } from "./search-images"
 import { SourcesList } from "./sources-list"
 import { ToolInvocation } from "./tool-invocation"
-import { useBreakpoint } from "@/hooks/use-breakpoint"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 
 type MessageAssistantProps = {
   children: string

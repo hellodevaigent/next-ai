@@ -1,10 +1,10 @@
-import { readFromIndexedDB, writeToIndexedDB } from "@/lib/chat-store/persist"
-import type { Chat, Chats } from "@/lib/chat-store/types"
+import { readFromIndexedDB, writeToIndexedDB } from "@/lib/store/chat-store/persist"
+import type { Chat, Chats } from "@/lib/store/chat-store/types"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
-import { MODEL_DEFAULT } from "../../config"
-import { fetchClient } from "../../fetch"
-import { API_ROUTE_UPDATE_CHAT_MODEL } from "../../routes"
+import { MODEL_DEFAULT } from "../../../config"
+import { fetchClient } from "../../../fetch"
+import { API_ROUTE_UPDATE_CHAT_MODEL } from "../../../routes"
 
 export async function getChatsForUserInDb(userId: string): Promise<Chats[]> {
   const supabase = createClient()

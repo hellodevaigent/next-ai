@@ -14,7 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useUser } from "@/lib/user-store/provider"
+import { useUser } from "@/lib/store/user-store/provider"
 import { GithubLogoIcon } from "@phosphor-icons/react"
 import { UserIcon } from "lucide-react"
 import Link from "next/link"

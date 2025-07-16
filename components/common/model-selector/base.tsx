@@ -1,8 +1,8 @@
 "use client"
 
 import { PopoverContentAuth } from "@/components/chat-input/popover-content-auth"
-import { useBreakpoint } from "@/hooks/use-breakpoint"
-import { useKeyShortcut } from "@/hooks/use-key-shortcut"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import { useKeyShortcut } from "@/lib/hooks/use-key-shortcut"
 import { Button } from "@/components/ui/button"
 import {
   Drawer,
@@ -24,11 +24,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useModel } from "@/lib/model-store/provider"
-import { filterAndSortModels } from "@/lib/model-store/utils"
+import { useModel } from "@/lib/store/model-store/provider"
+import { filterAndSortModels } from "@/lib/store/model-store/utils"
 import { ModelConfig } from "@/lib/models/types"
 import { PROVIDERS } from "@/lib/providers"
-import { useUserPreferences } from "@/lib/user-preference-store/provider"
+import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { cn } from "@/lib/utils"
 import {
   CaretDownIcon,

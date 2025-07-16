@@ -1,9 +1,9 @@
 "use client"
 
-import { useBreakpoint } from "@/hooks/use-breakpoint"
-import useClickOutside from "@/hooks/use-click-outside"
-import { useChats } from "@/lib/chat-store/chats/provider"
-import { Chat } from "@/lib/chat-store/types"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import useClickOutside from "@/lib/hooks/use-click-outside"
+import { useChats } from "@/lib/store/chat-store/chats/provider"
+import { Chat } from "@/lib/store/chat-store/types"
 import { cn } from "@/lib/utils"
 import { ChatCircleIcon, Check, X } from "@phosphor-icons/react"
 import Link from "next/link"

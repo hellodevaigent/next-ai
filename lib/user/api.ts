@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import {
   convertFromApiFormat,
   defaultPreferences,
-} from "@/lib/user-preference-store/utils"
+} from "@/lib/store/user-preference-store/utils"
 import type { UserProfile } from "./types"
 
 export async function getSupabaseUser() {

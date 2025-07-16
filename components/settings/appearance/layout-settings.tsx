@@ -1,7 +1,7 @@
 import {
   LayoutType,
   useUserPreferences,
-} from "@/lib/user-preference-store/provider"
+} from "@/lib/store/user-preference-store/provider"
 import { cn } from "@/lib/utils"
 import * as React from "react"
 import type { SVGProps } from "react"

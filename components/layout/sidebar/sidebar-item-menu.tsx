@@ -1,14 +1,14 @@
-import { useBreakpoint } from "@/hooks/use-breakpoint"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useChats } from "@/lib/chat-store/chats/provider"
-import { useMessages } from "@/lib/chat-store/messages/provider"
-import { useChatSession } from "@/lib/chat-store/session/provider"
-import { Chat } from "@/lib/chat-store/types"
+import { useChats } from "@/lib/store/chat-store/chats/provider"
+import { useMessages } from "@/lib/store/chat-store/messages/provider"
+import { useChatSession } from "@/lib/store/chat-store/session/provider"
+import { Chat } from "@/lib/store/chat-store/types"
 import { DotsThree, PencilSimple, Trash } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"

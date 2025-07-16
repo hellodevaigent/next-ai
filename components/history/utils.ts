@@ -1,4 +1,4 @@
-import type { Chats } from "@/lib/chat-store/types"
+import type { Chats } from "@/lib/store/chat-store/types"
 
 type TimeGroup = {
   name: string
