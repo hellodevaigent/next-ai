@@ -2,7 +2,7 @@ import {
   deleteFromIndexedDB,
   readFromIndexedDB,
   writeToIndexedDB,
-} from "@/lib/store/chat-store/persist"
+} from "@/lib/store/persist"
 import { fetchClient } from "@/lib/fetch"
 import type { Project } from "./types"
 

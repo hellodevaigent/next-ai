@@ -1,8 +1,22 @@
 "use client"
 
 import { toast } from "@/components/ui/toast"
-import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { useFileDelete } from "@/lib/hooks/use-file-delete"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { MODEL_DEFAULT, SYSTEM_PROMPT_DEFAULT } from "../../../config"
+import {
+  deleteFromIndexedDB,
+  readFromIndexedDB,
+  STORE_NAMES,
+  writeToIndexedDB,
+} from "../../persist"
 import type { Chats } from "../types"
 import {
   createNewChat as createNewChatFromDb,
@@ -12,10 +26,14 @@ import {
   updateChatModel as updateChatModelFromDb,
   updateChatTitle,
 } from "./api"
-import { useFileDelete } from "@/lib/hooks/use-file-delete"
+
+interface FavoriteItem {
+  id: string
+}
 
 interface ChatsContextType {
   chats: Chats[]
+  favorites: string[]
   refresh: () => Promise<void>
   isLoading: boolean
   updateTitle: (id: string, title: string) => Promise<void>
@@ -39,6 +57,7 @@ interface ChatsContextType {
   bumpChat: (id: string) => Promise<void>
   markChatAsLoaded: (chatId: string) => void
   isChatLoaded: (chatId: string) => boolean
+  toggleFavorite: (chatId: string) => Promise<void>
 }
 const ChatsContext = createContext<ChatsContextType | null>(null)
 
@@ -57,16 +76,32 @@ export function ChatsProvider({
 }) {
   const [isLoading, setIsLoading] = useState(true)
   const [chats, setChats] = useState<Chats[]>([])
+  const [favorites, setFavorites] = useState<string[]>([])
   const [loadedChats, setLoadedChats] = useState<Set<string>>(new Set())
   const { deleteChatAttachments } = useFileDelete()
 
+  const loadFavorites = useCallback(async () => {
+    const favoriteItems = await readFromIndexedDB<FavoriteItem>(
+      STORE_NAMES.CHAT_FAVORITE
+    )
+    if (Array.isArray(favoriteItems)) {
+      setFavorites(favoriteItems.map((item) => item.id))
+    }
+  }, [])
+
   useEffect(() => {
-    if (!userId) return
+    if (!userId) {
+      setIsLoading(false)
+      setChats([])
+      setFavorites([])
+      return
+    }
 
     const load = async () => {
       setIsLoading(true)
       const cached = await getCachedChats()
       setChats(cached)
+      await loadFavorites()
 
       try {
         const fresh = await fetchAndCacheChats(userId)
@@ -79,11 +114,50 @@ export function ChatsProvider({
     load()
   }, [userId])
 
+  const sortedChats = useMemo(() => {
+    return [...chats].sort((a, b) => {
+      const aIsFavorite = favorites.includes(a.id)
+      const bIsFavorite = favorites.includes(b.id)
+      if (aIsFavorite && !bIsFavorite) return -1
+      if (!aIsFavorite && bIsFavorite) return 1
+      return (
+        new Date(b.updated_at || 0).getTime() -
+        new Date(a.updated_at || 0).getTime()
+      )
+    })
+  }, [chats, favorites])
+
+  const toggleFavorite = useCallback(
+    async (chatId: string) => {
+      const originalFavorites = [...favorites]
+      const isCurrentlyFavorite = originalFavorites.includes(chatId)
+
+      const newFavorites = isCurrentlyFavorite
+        ? originalFavorites.filter((id) => id !== chatId)
+        : [...originalFavorites, chatId]
+
+      setFavorites(newFavorites) // Optimistic update
+
+      try {
+        if (isCurrentlyFavorite) {
+          await deleteFromIndexedDB(STORE_NAMES.CHAT_FAVORITE, chatId)
+        } else {
+          await writeToIndexedDB(STORE_NAMES.CHAT_FAVORITE, { id: chatId })
+        }
+      } catch (error) {
+        console.error("Failed to toggle chat favorite:", error)
+        setFavorites(originalFavorites) // Rollback
+      }
+    },
+    [favorites]
+  )
+
   const refresh = async () => {
     if (!userId) return
 
     const fresh = await fetchAndCacheChats(userId)
     setChats(fresh)
+    await loadFavorites()
   }
 
   const updateTitle = async (id: string, title: string) => {
@@ -91,10 +165,7 @@ export function ChatsProvider({
     const updatedChatWithNewTitle = prev.map((c) =>
       c.id === id ? { ...c, title, updated_at: new Date().toISOString() } : c
     )
-    const sorted = updatedChatWithNewTitle.sort(
-      (a, b) => +new Date(b.updated_at || "") - +new Date(a.updated_at || "")
-    )
-    setChats(sorted)
+    setChats(updatedChatWithNewTitle)
     try {
       await updateChatTitle(id, title)
     } catch {
@@ -114,6 +185,7 @@ export function ChatsProvider({
     try {
       await deleteChatAttachments(id)
       await deleteChatFromDb(id)
+      await deleteFromIndexedDB(STORE_NAMES.CHAT_FAVORITE, id)
       if (id === currentChatId && redirect) redirect()
     } catch {
       setChats(prev)
@@ -199,12 +271,15 @@ export function ChatsProvider({
   }
 
   const markChatAsLoaded = useCallback((chatId: string) => {
-    setLoadedChats(prev => new Set(prev).add(chatId))
+    setLoadedChats((prev) => new Set(prev).add(chatId))
   }, [])
 
-  const isChatLoaded = useCallback((chatId: string) => {
-  return loadedChats.has(chatId)
-}, [loadedChats])
+  const isChatLoaded = useCallback(
+    (chatId: string) => {
+      return loadedChats.has(chatId)
+    },
+    [loadedChats]
+  )
 
   useEffect(() => {
     setLoadedChats(new Set())
@@ -213,7 +288,8 @@ export function ChatsProvider({
   return (
     <ChatsContext.Provider
       value={{
-        chats,
+        chats: sortedChats,
+        favorites,
         refresh,
         updateTitle,
         deleteChat,
@@ -226,6 +302,7 @@ export function ChatsProvider({
         isLoading,
         markChatAsLoaded,
         isChatLoaded,
+        toggleFavorite,
       }}
     >
       {children}

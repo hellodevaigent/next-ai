@@ -1,4 +1,4 @@
-import { readFromIndexedDB, writeToIndexedDB } from "@/lib/store/chat-store/persist"
+import { readFromIndexedDB, writeToIndexedDB } from "@/lib/store/persist"
 import type { Chat, Chats } from "@/lib/store/chat-store/types"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"

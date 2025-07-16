@@ -3,7 +3,8 @@ import {
   readFromIndexedDB, 
   writeToIndexedDB, 
   deleteFromIndexedDB 
-} from '@/lib/store/chat-store/persist'
+} from '@/lib/store/persist'
+import { STORE_NAMES } from '../persist';
 
 interface SearchHistoryItem {
   id: string;
@@ -22,7 +23,7 @@ export function useProjectFavorites() {
   const loadFavorites = useCallback(async () => {
     setIsLoading(true)
     try {
-      const favoriteItems = await readFromIndexedDB<FavoriteItem>("project-favorite")
+      const favoriteItems = await readFromIndexedDB<FavoriteItem>(STORE_NAMES.PROJECT_FAVORITE)
       
       if (Array.isArray(favoriteItems)) {
         setFavorites(favoriteItems.map(item => item.id))
@@ -48,9 +49,9 @@ export function useProjectFavorites() {
       const isCurrentlyFavorite = favorites.includes(projectId)
       
       if (isCurrentlyFavorite) {
-        await deleteFromIndexedDB("project-favorite", projectId)
+        await deleteFromIndexedDB(STORE_NAMES.PROJECT_FAVORITE, projectId)
       } else {
-        await writeToIndexedDB("project-favorite", { id: projectId })
+        await writeToIndexedDB(STORE_NAMES.PROJECT_FAVORITE, { id: projectId })
       }
       await loadFavorites() 
     } catch (error) {
@@ -74,7 +75,7 @@ export function useSearchHistory() {
   const loadSearchHistory = useCallback(async () => {
     setIsLoading(true)
     try {
-      const history = await readFromIndexedDB<SearchHistoryItem>("project-search-istory")
+      const history = await readFromIndexedDB<SearchHistoryItem>(STORE_NAMES.CHAT_SEARCH_HISTORY)
       
       if (Array.isArray(history)) {
         const sortedHistory = history.sort((a, b) => b.timestamp - a.timestamp)
@@ -105,7 +106,7 @@ export function useSearchHistory() {
         query: query.trim(),
         timestamp: Date.now()
       }
-      await writeToIndexedDB("project-search-istory", newSearch)
+      await writeToIndexedDB(STORE_NAMES.CHAT_SEARCH_HISTORY, newSearch)
       await loadSearchHistory()
     } catch (error) {
       console.error('Failed to save search:', error)
@@ -114,7 +115,7 @@ export function useSearchHistory() {
 
   const clearHistory = useCallback(async () => {
     try {
-      await deleteFromIndexedDB("project-search-istory")
+      await deleteFromIndexedDB(STORE_NAMES.CHAT_SEARCH_HISTORY)
       await loadSearchHistory()
     } catch (error) {
       console.error('Failed to clear search history:', error)

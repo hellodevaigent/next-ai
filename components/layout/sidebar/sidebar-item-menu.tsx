@@ -9,9 +9,9 @@ import { useChats } from "@/lib/store/chat-store/chats/provider"
 import { useMessages } from "@/lib/store/chat-store/messages/provider"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
 import { Chat } from "@/lib/store/chat-store/types"
-import { DotsThree, PencilSimple, Trash } from "@phosphor-icons/react"
+import { DotsThree, PencilSimple, Star, Trash } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { DialogDeleteChat } from "../../project/dialog-delete-chat"
 import { cn } from "@/lib/utils"
 
@@ -19,20 +19,23 @@ type SidebarItemMenuProps = {
   chat: Chat
   onStartEditing: () => void
   onMenuOpenChange?: (open: boolean) => void
+  onFavoriteToggle?: () => void
 }
 
 export function SidebarItemMenu({
   chat,
   onStartEditing,
   onMenuOpenChange,
+  onFavoriteToggle,
 }: SidebarItemMenuProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
   const { deleteMessages } = useMessages()
-  const { deleteChat } = useChats()
+  const { deleteChat, favorites, toggleFavorite } = useChats()
   const { chatId } = useChatSession()
   const isMobile = useBreakpoint(768)
+  const isFavorite = favorites.includes(chat.id)
 
   const handleConfirmDelete = async () => {
     await deleteMessages()
@@ -44,6 +47,17 @@ export function SidebarItemMenu({
     onMenuOpenChange?.(open)
   }
 
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsMenuOpen(false);
+    onMenuOpenChange?.(false);
+    onFavoriteToggle?.();
+    
+    await toggleFavorite(chat.id);
+  };
+
   return (
     <>
       <DropdownMenu
@@ -54,7 +68,7 @@ export function SidebarItemMenu({
         <DropdownMenuTrigger asChild>
           <button
             className={cn(
-              "flex size-7 items-center justify-center rounded-md p-1 transition-colors duration-150 cursor-pointer",
+              "flex size-7 cursor-pointer items-center justify-center rounded-md p-1 transition-colors duration-150",
               isMenuOpen ? "bg-secondary" : "hover:bg-secondary"
             )}
             onClick={(e) => e.stopPropagation()}
@@ -63,6 +77,17 @@ export function SidebarItemMenu({
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={handleToggleFavorite}
+          >
+            <Star
+              size={16}
+              className="mr-2"
+              weight={isFavorite ? "fill" : "regular"}
+            />
+            {isFavorite ? "Unfavorite" : "Favorite"}
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={(e) => {

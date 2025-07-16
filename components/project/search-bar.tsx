@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { MagnifyingGlass, Clock, X, Trash } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { useSearchHistory } from '@/lib/store/project-store/use-project'
+import { Input } from '../ui/input'
 
 interface SearchBarProps {
   onSearch: (query: string) => void
@@ -78,7 +79,7 @@ export function SearchBar({ onSearch, placeholder = "Search projects...", classN
           size={20} 
           className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" 
         />
-        <input
+        <Input
           ref={inputRef}
           type="text"
           value={query}
@@ -86,7 +87,7 @@ export function SearchBar({ onSearch, placeholder = "Search projects...", classN
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full pl-10 pr-10 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+          className="w-full pl-10 pr-10"
         />
         {query && (
           <button

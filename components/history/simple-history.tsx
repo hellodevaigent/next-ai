@@ -33,7 +33,7 @@ interface ChatItemProps {
   sidebarClose: (open: boolean) => void
 }
 
-interface ChatGroup {
+export interface ChatGroup {
   name: string
   chats: Chats[]
 }

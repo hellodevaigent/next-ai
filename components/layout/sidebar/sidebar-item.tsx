@@ -23,6 +23,7 @@ export function SidebarItem({ chat, currentChatId }: SidebarItemProps) {
   const { updateTitle } = useChats()
   const isMobile = useBreakpoint(768)
   const { setOpenMobile: setOpenSidebarMobile } = useSidebar()
+  
   const containerRef = useRef<HTMLDivElement | null>(null)
 
   if (!isEditing && lastChatTitleRef.current !== chat.title) {

@@ -2,15 +2,10 @@
 
 import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import { useChats } from "@/lib/store/chat-store/chats/provider"
-import { useMessages } from "@/lib/store/chat-store/messages/provider"
-import { useChatSession } from "@/lib/store/chat-store/session/provider"
 import { cn } from "@/lib/utils"
 import { ListMagnifyingGlass } from "@phosphor-icons/react"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { CommandHistory } from "./command-history"
-import { DrawerHistory } from "./drawer-history"
-import { useSidebar } from "../ui/sidebar"
+import { HistoryContent } from "./history-content"
 
 type HistoryTriggerProps = {
   hasSidebar: boolean
@@ -28,23 +23,8 @@ export function HistoryTrigger({
   hasPopover = true,
 }: HistoryTriggerProps) {
   const isMobile = useBreakpoint(768)
-  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
-  const { chats, updateTitle, deleteChat } = useChats()
-  const { deleteMessages } = useMessages()
-  const { chatId } = useChatSession()
-
-  const handleSaveEdit = async (id: string, newTitle: string) => {
-    await updateTitle(id, newTitle)
-  }
-
-  const handleConfirmDelete = async (id: string) => {
-    if (id === chatId) {
-      setIsOpen(false)
-    }
-    await deleteMessages()
-    await deleteChat(id, chatId!, () => router.push("/"))
-  }
+  const { chats } = useChats()
 
   const defaultTrigger = (
     <button
@@ -63,24 +43,9 @@ export function HistoryTrigger({
     </button>
   )
 
-  if (isMobile) {
-    return (
-      <DrawerHistory
-        chatHistory={chats}
-        onSaveEdit={handleSaveEdit}
-        onConfirmDelete={handleConfirmDelete}
-        trigger={defaultTrigger}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-      />
-    )
-  }
-
   return (
-    <CommandHistory
+    <HistoryContent
       chatHistory={chats}
-      onSaveEdit={handleSaveEdit}
-      onConfirmDelete={handleConfirmDelete}
       trigger={defaultTrigger}
       isOpen={isOpen}
       setIsOpen={setIsOpen}

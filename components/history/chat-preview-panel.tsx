@@ -31,10 +31,10 @@ function MessageBubble({ content, role }: MessageBubbleProps) {
 
   if (isUser) {
     return (
-      <div className="flex justify-end">
-        <div className="max-w-[70%]">
+      <div className="flex justify-start">
+        <>
           <MessageContent
-            className="bg-accent relative rounded-3xl px-5 py-2.5"
+            className="bg-accent relative rounded-lg px-3 py-1.5"
             markdown={true}
             components={{
               code: ({ children }) => <>{children}</>,
@@ -53,7 +53,7 @@ function MessageBubble({ content, role }: MessageBubbleProps) {
           >
             {content}
           </MessageContent>
-        </div>
+        </>
       </div>
     )
   }
@@ -222,7 +222,7 @@ export function ChatPreviewPanel({
       onMouseLeave={() => onHover?.(false)}
       key={chatId}
     >
-      <div className="h-[480px]">
+      <div className="h-[457px]">
         {!chatId && <DefaultState />}
         {chatId && isLoading && <LoadingState />}
         {chatId && error && !isLoading && (
