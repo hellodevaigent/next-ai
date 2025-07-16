@@ -6,6 +6,7 @@ export type UserPreferences = {
   showToolInvocations: boolean
   showConversationPreviews: boolean
   hiddenModels: string[]
+  favoriteChats: string[];
 }
 
 export const defaultPreferences: UserPreferences = {
@@ -14,6 +15,7 @@ export const defaultPreferences: UserPreferences = {
   showToolInvocations: true,
   showConversationPreviews: true,
   hiddenModels: [],
+  favoriteChats: [],
 }
 
 // Helper functions to convert between API format (snake_case) and frontend format (camelCase)
@@ -24,6 +26,7 @@ export function convertFromApiFormat(apiData: any): UserPreferences {
     showToolInvocations: apiData.show_tool_invocations ?? true,
     showConversationPreviews: apiData.show_conversation_previews ?? true,
     hiddenModels: apiData.hidden_models || [],
+    favoriteChats: apiData.favorite_chats || [],
   }
 }
 
@@ -38,5 +41,7 @@ export function convertToApiFormat(preferences: Partial<UserPreferences>) {
     apiData.show_conversation_previews = preferences.showConversationPreviews
   if (preferences.hiddenModels !== undefined)
     apiData.hidden_models = preferences.hiddenModels
+  if (preferences.favoriteChats !== undefined)
+    apiData.favorite_chats = preferences.favoriteChats;
   return apiData
 }

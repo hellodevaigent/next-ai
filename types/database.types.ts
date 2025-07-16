@@ -309,6 +309,8 @@ export type Database = {
           show_tool_invocations: boolean | null
           show_conversation_previews: boolean | null
           hidden_models: string[] | null
+          favorite_chats: string[] | null
+          favorite_projects: string[] | null
           created_at: string | null
           updated_at: string | null
         }
@@ -319,6 +321,8 @@ export type Database = {
           show_tool_invocations?: boolean | null
           show_conversation_previews?: boolean | null
           hidden_models?: string[] | null
+          favorite_chats?: string[] | null
+          favorite_projects?: string[] | null
           created_at?: string | null
           updated_at?: string | null
         }
@@ -329,6 +333,8 @@ export type Database = {
           show_tool_invocations?: boolean | null
           show_conversation_previews?: boolean | null
           hidden_models?: string[] | null
+          favorite_chats?: string[] | null
+          favorite_projects?: string[] | null
           created_at?: string | null
           updated_at?: string | null
         }

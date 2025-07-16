@@ -258,6 +258,8 @@ CREATE TABLE user_preferences (
   show_tool_invocations BOOLEAN DEFAULT true,
   show_conversation_previews BOOLEAN DEFAULT true,
   hidden_models TEXT[] DEFAULT '{}',
+  favorite_chats TEXT[] DEFAULT '{}',
+  favorite_projects TEXT[] DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
