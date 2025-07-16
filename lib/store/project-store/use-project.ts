@@ -5,6 +5,8 @@ import {
   deleteFromIndexedDB 
 } from '@/lib/store/persist'
 import { STORE_NAMES } from '../persist';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetchClient } from '@/lib/fetch';
 
 interface SearchHistoryItem {
   id: string;
@@ -12,59 +14,123 @@ interface SearchHistoryItem {
   timestamp: number;
 }
 
-interface FavoriteItem {
-  id: string;
-}
+type FavoriteProjectsResponse = {
+  favorite_projects: string[];
+};
+
+// export function useProjectFavorites() {
+//   const [favorites, setFavorites] = useState<string[]>([])
+//   const [isLoading, setIsLoading] = useState(true)
+
+//   const loadFavorites = useCallback(async () => {
+//     setIsLoading(true)
+//     try {
+//       const favoriteItems = await readFromIndexedDB<FavoriteItem>(STORE_NAMES.PROJECT_FAVORITE)
+      
+//       if (Array.isArray(favoriteItems)) {
+//         setFavorites(favoriteItems.map(item => item.id))
+//       } else if (favoriteItems && typeof favoriteItems === 'object' && 'id' in favoriteItems) {
+//         setFavorites([favoriteItems.id])
+//       } else {
+//         setFavorites([])
+//       }
+//     } catch (error) {
+//       console.error('Failed to load favorites:', error)
+//       setFavorites([])
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }, [])
+
+//   useEffect(() => {
+//     loadFavorites()
+//   }, [loadFavorites])
+
+//   const toggleFavorite = useCallback(async (projectId: string) => {
+//     try {
+//       const isCurrentlyFavorite = favorites.includes(projectId)
+      
+//       if (isCurrentlyFavorite) {
+//         await deleteFromIndexedDB(STORE_NAMES.PROJECT_FAVORITE, projectId)
+//       } else {
+//         await writeToIndexedDB(STORE_NAMES.PROJECT_FAVORITE, { id: projectId })
+//       }
+//       await loadFavorites() 
+//     } catch (error) {
+//       console.error('Failed to toggle favorite:', error)
+//     }
+//   }, [favorites, loadFavorites])
+
+//   return { 
+//     favorites, 
+//     toggleFavorite, 
+//     isLoading,
+//     refetch: loadFavorites
+//   }
+// }
 
 export function useProjectFavorites() {
-  const [favorites, setFavorites] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient();
 
-  const loadFavorites = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const favoriteItems = await readFromIndexedDB<FavoriteItem>(STORE_NAMES.PROJECT_FAVORITE)
-      
-      if (Array.isArray(favoriteItems)) {
-        setFavorites(favoriteItems.map(item => item.id))
-      } else if (favoriteItems && typeof favoriteItems === 'object' && 'id' in favoriteItems) {
-        setFavorites([favoriteItems.id])
-      } else {
-        setFavorites([])
+  const { data: favoriteProjects = [], isLoading } = useQuery<string[]>({
+    queryKey: ["favorite-projects"],
+    queryFn: async () => {
+      const response = await fetchClient(
+        "/api/favorite/projects"
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch favorite projects");
       }
-    } catch (error) {
-      console.error('Failed to load favorites:', error)
-      setFavorites([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      const data: FavoriteProjectsResponse = await response.json();
+      return data.favorite_projects || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  useEffect(() => {
-    loadFavorites()
-  }, [loadFavorites])
-
-  const toggleFavorite = useCallback(async (projectId: string) => {
-    try {
-      const isCurrentlyFavorite = favorites.includes(projectId)
-      
-      if (isCurrentlyFavorite) {
-        await deleteFromIndexedDB(STORE_NAMES.PROJECT_FAVORITE, projectId)
-      } else {
-        await writeToIndexedDB(STORE_NAMES.PROJECT_FAVORITE, { id: projectId })
+  const updateFavoriteProjectsMutation = useMutation({
+    mutationFn: async (favorites: string[]) => {
+      const response = await fetchClient(
+        "/api/favorite/projects",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ favorite_projects: favorites }),
+        }
+      );
+      if (!response.ok) throw new Error("Failed to save favorite projects");
+      return (await response.json()) as FavoriteProjectsResponse;
+    },
+    onMutate: async (newFavorites) => {
+      await queryClient.cancelQueries({ queryKey: ["favorite-projects"] });
+      const previousFavorites = queryClient.getQueryData<string[]>(["favorite-projects"]);
+      queryClient.setQueryData(["favorite-projects"], newFavorites);
+      return { previousFavorites };
+    },
+    onError: (err, newFavorites, context) => {
+      if (context?.previousFavorites) {
+        queryClient.setQueryData(["favorite-projects"], context.previousFavorites);
       }
-      await loadFavorites() 
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error)
-    }
-  }, [favorites, loadFavorites])
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["favorite-projects"] });
+    },
+  });
 
-  return { 
-    favorites, 
-    toggleFavorite, 
+  const toggleFavorite = useCallback(
+    (projectId: string) => {
+      const newFavorites = favoriteProjects.includes(projectId)
+        ? favoriteProjects.filter((id) => id !== projectId)
+        : [...favoriteProjects, projectId];
+      updateFavoriteProjectsMutation.mutate(newFavorites);
+    },
+    [favoriteProjects, updateFavoriteProjectsMutation]
+  );
+
+  return {
+    favorites: favoriteProjects,
+    toggleFavorite,
     isLoading,
-    refetch: loadFavorites
-  }
+  };
 }
 
 

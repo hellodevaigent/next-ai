@@ -22,12 +22,11 @@ export async function GET(request: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from("user_preferences")
-      .select("favorite_chats")
-      .eq("user_id", user.id)
-      .single();
+      .from("favorite_chats")
+      .select("chat_id")
+      .eq("user_id", user.id);
 
-    if (error && error.code !== "PGRST116") {
+    if (error) {
       console.error("Error fetching favorite chats:", error);
       return NextResponse.json(
         { error: "Failed to fetch favorite chats" },
@@ -36,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      favorite_chats: data?.favorite_chats || [],
+      favorite_chats: data.map(fav => fav.chat_id) || [],
     });
   } catch (error) {
     console.error("Error in favorite-chats GET API:", error);
@@ -76,29 +75,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
-      .from("user_preferences")
-      .upsert(
-        {
-          user_id: user.id,
-          favorite_chats: favorite_chats,
-        },
-        { onConflict: "user_id" }
-      )
-      .select("favorite_chats")
-      .single();
+    const { error: deleteError } = await supabase
+      .from("favorite_chats")
+      .delete()
+      .eq("user_id", user.id);
 
-    if (error) {
-      console.error("Error updating favorite chats:", error);
+    if (deleteError) {
+      console.error("Error deleting old favorite chats:", deleteError);
       return NextResponse.json(
         { error: "Failed to update favorite chats" },
         { status: 500 }
       );
     }
 
+    if (favorite_chats.length > 0) {
+      const { error: insertError } = await supabase
+        .from("favorite_chats")
+        .insert(favorite_chats.map(chat_id => ({ user_id: user.id, chat_id })));
+
+      if (insertError) {
+        console.error("Error inserting new favorite chats:", insertError);
+        return NextResponse.json(
+          { error: "Failed to update favorite chats" },
+          { status: 500 }
+        );
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      favorite_chats: data.favorite_chats,
+      favorite_chats,
     });
   } catch (error) {
     console.error("Error in favorite-chats POST API:", error);

@@ -309,8 +309,6 @@ export type Database = {
           show_tool_invocations: boolean | null
           show_conversation_previews: boolean | null
           hidden_models: string[] | null
-          favorite_chats: string[] | null
-          favorite_projects: string[] | null
           created_at: string | null
           updated_at: string | null
         }
@@ -321,8 +319,6 @@ export type Database = {
           show_tool_invocations?: boolean | null
           show_conversation_previews?: boolean | null
           hidden_models?: string[] | null
-          favorite_chats?: string[] | null
-          favorite_projects?: string[] | null
           created_at?: string | null
           updated_at?: string | null
         }
@@ -333,8 +329,6 @@ export type Database = {
           show_tool_invocations?: boolean | null
           show_conversation_previews?: boolean | null
           hidden_models?: string[] | null
-          favorite_chats?: string[] | null
-          favorite_projects?: string[] | null
           created_at?: string | null
           updated_at?: string | null
         }
@@ -344,6 +338,72 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorite_chats: {
+        Row: {
+          user_id: string
+          chat_id: string
+          created_at: string | null
+        }
+        Insert: {
+          user_id: string
+          chat_id: string
+          created_at?: string | null
+        }
+        Update: {
+          user_id?: string
+          chat_id?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorite_chats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorite_chats_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorite_projects: {
+        Row: {
+          user_id: string
+          project_id: string
+          created_at: string | null
+        }
+        Insert: {
+          user_id: string
+          project_id: string
+          created_at?: string | null
+        }
+        Update: {
+          user_id?: string
+          project_id?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorite_projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorite_projects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]

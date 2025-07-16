@@ -258,10 +258,24 @@ CREATE TABLE user_preferences (
   show_tool_invocations BOOLEAN DEFAULT true,
   show_conversation_previews BOOLEAN DEFAULT true,
   hidden_models TEXT[] DEFAULT '{}',
-  favorite_chats TEXT[] DEFAULT '{}',
-  favorite_projects TEXT[] DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+--- Favorite Chats
+CREATE TABLE favorite_chats (
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  chat_id UUID NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, chat_id)
+);
+
+--- Favorite Project
+CREATE TABLE favorite_projects (
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, project_id)
 );
 
 -- Optional: keep updated_at in sync for user_preferences

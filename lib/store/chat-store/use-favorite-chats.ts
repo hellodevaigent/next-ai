@@ -13,7 +13,7 @@ export function useFavoriteChats() {
     queryKey: ["favorite-chats"],
     queryFn: async () => {
       const response = await fetchClient(
-        "/api/user-preferences/favorite-chats"
+        "/api/favorite/chats"
       );
       if (!response.ok) {
         throw new Error("Failed to fetch favorite chats");
@@ -27,7 +27,7 @@ export function useFavoriteChats() {
   const updateFavoriteChatsMutation = useMutation({
     mutationFn: async (favoriteChats: string[]) => {
       const response = await fetchClient(
-        "/api/user-preferences/favorite-chats",
+        "/api/favorite/chats",
         {
           method: "POST",
           headers: {
