@@ -10,11 +10,13 @@ import {
 
 const STORE_NAMES = {
   CHATS: "chats",
+  CHAT_FAVORITE: "chat-favorite",
+  CHAT_SEARCH_HISTORY: "chat-search-history",
   MESSAGES: "messages", 
-  SYNC: "sync",
   PROJECTS: "projects",
-  FAVORITES: "favorites",
-  SEARCH_HISTORY: "searchHistory"
+  PROJECT_FAVORITE: "project-favorite",
+  PROJECT_SEARCH_HISTORY: "project-search-istory",
+  SYNC: "sync",
 } as const;
 
 export type StoreName = typeof STORE_NAMES[keyof typeof STORE_NAMES];

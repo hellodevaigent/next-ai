@@ -22,7 +22,7 @@ export function useProjectFavorites() {
   const loadFavorites = useCallback(async () => {
     setIsLoading(true)
     try {
-      const favoriteItems = await readFromIndexedDB<FavoriteItem>("favorites")
+      const favoriteItems = await readFromIndexedDB<FavoriteItem>("project-favorite")
       
       if (Array.isArray(favoriteItems)) {
         setFavorites(favoriteItems.map(item => item.id))
@@ -48,9 +48,9 @@ export function useProjectFavorites() {
       const isCurrentlyFavorite = favorites.includes(projectId)
       
       if (isCurrentlyFavorite) {
-        await deleteFromIndexedDB("favorites", projectId)
+        await deleteFromIndexedDB("project-favorite", projectId)
       } else {
-        await writeToIndexedDB("favorites", { id: projectId })
+        await writeToIndexedDB("project-favorite", { id: projectId })
       }
       await loadFavorites() 
     } catch (error) {
@@ -74,7 +74,7 @@ export function useSearchHistory() {
   const loadSearchHistory = useCallback(async () => {
     setIsLoading(true)
     try {
-      const history = await readFromIndexedDB<SearchHistoryItem>("searchHistory")
+      const history = await readFromIndexedDB<SearchHistoryItem>("project-search-istory")
       
       if (Array.isArray(history)) {
         const sortedHistory = history.sort((a, b) => b.timestamp - a.timestamp)
@@ -105,7 +105,7 @@ export function useSearchHistory() {
         query: query.trim(),
         timestamp: Date.now()
       }
-      await writeToIndexedDB("searchHistory", newSearch)
+      await writeToIndexedDB("project-search-istory", newSearch)
       await loadSearchHistory()
     } catch (error) {
       console.error('Failed to save search:', error)
@@ -114,7 +114,7 @@ export function useSearchHistory() {
 
   const clearHistory = useCallback(async () => {
     try {
-      await deleteFromIndexedDB("searchHistory")
+      await deleteFromIndexedDB("project-search-istory")
       await loadSearchHistory()
     } catch (error) {
       console.error('Failed to clear search history:', error)
