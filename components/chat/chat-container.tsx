@@ -14,23 +14,109 @@ import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { useUser } from "@/lib/store/user-store/provider"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "motion/react"
-import dynamic from "next/dynamic"
 import { redirect } from "next/navigation"
-import { useMemo, useState } from "react"
+import { lazy, memo, Suspense, useCallback, useMemo, useState } from "react"
 import { useChatCore } from "../../lib/hooks/use-chat-core"
 import { useChatOperations } from "../../lib/hooks/use-chat-operations"
 import { useFileUpload } from "../../lib/hooks/use-file-upload"
 import { ConversationSkeleton } from "../skeleton/conversation"
 
-const FeedbackWidget = dynamic(
-  () => import("./feedback-widget").then((mod) => mod.FeedbackWidget),
-  { ssr: false }
+// Lazy load heavy components
+const FeedbackWidget = lazy(() =>
+  import("./feedback-widget").then((mod) => ({ default: mod.FeedbackWidget }))
 )
 
-const DialogAuth = dynamic(
-  () => import("./dialog-auth").then((mod) => mod.DialogAuth),
-  { ssr: false }
+const DialogAuth = lazy(() =>
+  import("./dialog-auth").then((mod) => ({ default: mod.DialogAuth }))
 )
+
+// Types
+interface OnboardingProps {
+  showOnboarding: boolean
+}
+
+interface ChatInputContainerProps {
+  chatInputProps: any
+  messagesLength: number
+}
+
+interface ConversationContainerProps {
+  showOnboarding: boolean
+  shouldShowSkeleton: boolean
+  conversationProps: any
+}
+
+// Memoized components
+const OnboardingHeader = memo<OnboardingProps>(({ showOnboarding }) => {
+  if (!showOnboarding) return null
+  
+  return (
+    <motion.div
+      key="onboarding"
+      className="absolute bottom-[60%] mx-auto max-w-[50rem] md:relative md:bottom-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      layout="position"
+      layoutId="onboarding"
+      transition={{
+        layout: {
+          duration: 0,
+        },
+      }}
+    >
+      <h1 className="mb-6 text-3xl font-medium tracking-tight">
+        What&apos;s on your mind?
+      </h1>
+    </motion.div>
+  )
+})
+
+OnboardingHeader.displayName = "OnboardingHeader"
+
+const ChatInputContainer = memo<ChatInputContainerProps>(
+  ({ chatInputProps, messagesLength }) => (
+    <motion.div
+      className={cn(
+        "relative inset-x-0 bottom-0 z-50 mx-auto w-full max-w-3xl"
+      )}
+      layout="position"
+      layoutId="chat-input-container"
+      transition={{
+        layout: {
+          duration: messagesLength === 1 ? 0.3 : 0,
+        },
+      }}
+    >
+      <ChatInput {...chatInputProps} />
+    </motion.div>
+  )
+)
+
+ChatInputContainer.displayName = "ChatInputContainer"
+
+const ConversationContainer = memo<ConversationContainerProps>(
+  ({ showOnboarding, shouldShowSkeleton, conversationProps }) => (
+    <AnimatePresence initial={false} mode="popLayout">
+      {showOnboarding ? (
+        <OnboardingHeader showOnboarding={showOnboarding} />
+      ) : shouldShowSkeleton ? (
+        <ConversationSkeleton key="skeleton" />
+      ) : (
+        <Conversation key="conversation" {...conversationProps} />
+      )}
+    </AnimatePresence>
+  )
+)
+
+ConversationContainer.displayName = "ConversationContainer"
+
+// Fallback components for lazy loading
+const FeedbackWidgetFallback = memo(() => <div className="h-0 w-0" />)
+FeedbackWidgetFallback.displayName = "FeedbackWidgetFallback"
+
+const DialogAuthFallback = memo(() => <div className="h-0 w-0" />)
+DialogAuthFallback.displayName = "DialogAuthFallback"
 
 export function ChatContainer() {
   const { chatId } = useChatSession()
@@ -80,10 +166,20 @@ export function ChatContainer() {
 
   // State to pass between hooks
   const [hasDialogAuth, setHasDialogAuth] = useState(false)
+  
+  // Memoize computed values
   const isAuthenticated = useMemo(() => !!user?.id, [user?.id])
   const systemPrompt = useMemo(
     () => user?.system_prompt || SYSTEM_PROMPT_DEFAULT,
     [user?.system_prompt]
+  )
+
+  // Memoize callbacks for chat operations
+  const setMessagesCallback = useCallback(() => {}, [])
+  const setInputCallback = useCallback(() => {}, [])
+  const setHasDialogAuthCallback = useCallback(
+    (value: boolean) => setHasDialogAuth(value),
+    []
   )
 
   // Chat operations (utils + handlers) - created first
@@ -95,9 +191,9 @@ export function ChatContainer() {
       selectedModel,
       systemPrompt,
       createNewChat,
-      setHasDialogAuth,
-      setMessages: () => {},
-      setInput: () => {},
+      setHasDialogAuth: setHasDialogAuthCallback,
+      setMessages: setMessagesCallback,
+      setInput: setInputCallback,
     })
 
   // Core chat functionality (initialization + state + actions)
@@ -138,19 +234,7 @@ export function ChatContainer() {
     initialMessages.length > 0
   )
 
-  // Memoize the conversation props to prevent unnecessary rerenders
-  const conversationProps = useMemo(
-    () => ({
-      messages,
-      status,
-      onDelete: handleDelete,
-      onEdit: handleEdit,
-      onReload: handleReload,
-    }),
-    [messages, status, handleDelete, handleEdit, handleReload]
-  )
-
-  // Memoize the chat input props
+  // Memoize the chat input props with better dependency tracking
   const chatInputProps = useMemo(
     () => ({
       value: input,
@@ -161,8 +245,7 @@ export function ChatContainer() {
       files,
       onFileUpload: handleFileUpload,
       onFileRemove: handleFileRemove,
-      hasSuggestions:
-        preferences.promptSuggestions && !chatId && messages.length === 0,
+      hasSuggestions: preferences.promptSuggestions && !chatId && messages.length === 0,
       onSelectModel: handleModelChange,
       selectedModel,
       isUserAuthenticated: isAuthenticated,
@@ -193,27 +276,58 @@ export function ChatContainer() {
     ]
   )
 
+  // Memoize the conversation props to prevent unnecessary rerenders
+  const conversationProps = useMemo(
+    () => ({
+      messages,
+      status,
+      onDelete: handleDelete,
+      onEdit: handleEdit,
+      onReload: handleReload,
+    }),
+    [messages, status, handleDelete, handleEdit, handleReload]
+  )
+
+  // Memoize conditional states
+  const showOnboarding = useMemo(
+    () => !chatId && messages.length === 0,
+    [chatId, messages.length]
+  )
+
+  const shouldShowSkeleton = useMemo(
+    () =>
+      shouldShowLoading &&
+      messages.length === 0 &&
+      !isSubmitting &&
+      !showOnboarding,
+    [shouldShowLoading, messages.length, isSubmitting, showOnboarding]
+  )
+
   // Handle redirect for invalid chatId - only redirect if we're certain the chat doesn't exist
   // and we're not in a transient state during chat creation
-  if (
-    chatId &&
-    !isChatsLoading &&
-    !currentChat &&
-    !isSubmitting &&
-    status === "ready" &&
-    messages.length === 0 &&
-    !hasSentFirstMessageRef.current
-  ) {
+  const shouldRedirect = useMemo(
+    () =>
+      chatId &&
+      !isChatsLoading &&
+      !currentChat &&
+      !isSubmitting &&
+      status === "ready" &&
+      messages.length === 0 &&
+      !hasSentFirstMessageRef.current,
+    [
+      chatId,
+      isChatsLoading,
+      currentChat,
+      isSubmitting,
+      status,
+      messages.length,
+      hasSentFirstMessageRef,
+    ]
+  )
+
+  if (shouldRedirect) {
     return redirect("/")
   }
-
-  const showOnboarding = !chatId && messages.length === 0
-
-  const shouldShowSkeleton =
-    shouldShowLoading &&
-    messages.length === 0 &&
-    !isSubmitting &&
-    !showOnboarding
 
   return (
     <div
@@ -221,51 +335,24 @@ export function ChatContainer() {
         "@container/main relative -mt-[56px] flex h-full flex-col items-center justify-end md:justify-center"
       )}
     >
-      <DialogAuth open={hasDialogAuth} setOpen={setHasDialogAuth} />
+      <Suspense fallback={<DialogAuthFallback />}>
+        <DialogAuth open={hasDialogAuth} setOpen={setHasDialogAuth} />
+      </Suspense>
 
-      <AnimatePresence initial={false} mode="popLayout">
-        {showOnboarding ? (
-          <motion.div
-            key="onboarding"
-            className="absolute bottom-[60%] mx-auto max-w-[50rem] md:relative md:bottom-auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            layout="position"
-            layoutId="onboarding"
-            transition={{
-              layout: {
-                duration: 0,
-              },
-            }}
-          >
-            <h1 className="mb-6 text-3xl font-medium tracking-tight">
-              What&apos;s on your mind?
-            </h1>
-          </motion.div>
-        ) : shouldShowSkeleton ? (
-          <ConversationSkeleton key="skeleton" />
-        ) : (
-          <Conversation key="conversation" {...conversationProps} />
-        )}
-      </AnimatePresence>
+      <ConversationContainer
+        showOnboarding={showOnboarding}
+        shouldShowSkeleton={shouldShowSkeleton}
+        conversationProps={conversationProps}
+      />
 
-      <motion.div
-        className={cn(
-          "relative inset-x-0 bottom-0 z-50 mx-auto w-full max-w-3xl"
-        )}
-        layout="position"
-        layoutId="chat-input-container"
-        transition={{
-          layout: {
-            duration: messages.length === 1 ? 0.3 : 0,
-          },
-        }}
-      >
-        <ChatInput {...chatInputProps} />
-      </motion.div>
+      <ChatInputContainer
+        chatInputProps={chatInputProps}
+        messagesLength={messages.length}
+      />
 
-      <FeedbackWidget authUserId={user?.id} />
+      <Suspense fallback={<FeedbackWidgetFallback />}>
+        <FeedbackWidget authUserId={user?.id} />
+      </Suspense>
     </div>
   )
 }
