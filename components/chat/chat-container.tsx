@@ -42,7 +42,7 @@ export function ChatContainer() {
     isLoading: isChatsLoading,
   } = useChats()
 
-  useTitle(chatId)
+  useTitle(chatId || null)
 
   const currentChat = useMemo(
     () => (chatId ? getChatById(chatId) : null),
