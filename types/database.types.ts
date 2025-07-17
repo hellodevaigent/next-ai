@@ -142,7 +142,7 @@ export type Database = {
           chat_id: string
           content: string | null
           created_at: string | null
-          id: number
+          id: string
           role: "system" | "user" | "assistant" | "data"
           parts: Json | null
           user_id?: string | null
@@ -154,7 +154,7 @@ export type Database = {
           chat_id: string
           content: string | null
           created_at?: string | null
-          id?: number
+          id?: string 
           role: "system" | "user" | "assistant" | "data"
           parts?: Json
           user_id?: string | null
@@ -166,7 +166,7 @@ export type Database = {
           chat_id?: string
           content?: string | null
           created_at?: string | null
-          id?: number
+          id?: string
           role?: "system" | "user" | "assistant" | "data"
           parts?: Json
           user_id?: string | null

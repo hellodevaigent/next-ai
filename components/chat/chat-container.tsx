@@ -8,7 +8,6 @@ import { useChats } from "@/lib/store/chat-store/chats/provider"
 import { useMessages } from "@/lib/store/chat-store/messages/provider"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
 import { MODEL_DEFAULT, SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
-import { useModel } from "@/lib/hooks/use-model"
 import { useTitle } from "@/lib/hooks/use-title"
 import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { useUser } from "@/lib/store/user-store/provider"
@@ -200,15 +199,13 @@ export function ChatContainer() {
   }, [currentChat, modelForNewChat])
 
   // Memoize callbacks for chat operations
-  const setMessagesCallback = useCallback(() => {}, [])
-  const setInputCallback = useCallback(() => {}, [])
   const setHasDialogAuthCallback = useCallback(
     (value: boolean) => setHasDialogAuth(value),
     []
   )
 
   // Chat operations (utils + handlers) - created first
-  const { checkLimitsAndNotify, ensureChatExists, handleDelete, handleEdit } =
+  const { checkLimitsAndNotify, ensureChatExists } =
     useChatOperations({
       isAuthenticated,
       chatId,
@@ -217,8 +214,6 @@ export function ChatContainer() {
       systemPrompt,
       createNewChat,
       setHasDialogAuth: setHasDialogAuthCallback,
-      setMessages: setMessagesCallback,
-      setInput: setInputCallback,
     })
 
   // Core chat functionality (initialization + state + actions)
@@ -307,11 +302,11 @@ export function ChatContainer() {
       messages,
       status,
       isSubmitting,
-      onDelete: handleDelete,
-      onEdit: handleEdit,
+      onDelete: () => {},
+      onEdit: () => {},
       onReload: handleReload,
     }),
-    [messages, status, handleDelete, handleEdit, handleReload]
+    [messages, status, handleReload]
   )
 
   // Memoize conditional states

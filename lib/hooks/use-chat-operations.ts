@@ -3,7 +3,6 @@ import { checkRateLimits } from "@/lib/api"
 import type { Chats } from "@/lib/store/chat-store/types"
 import { REMAINING_QUERY_ALERT_THRESHOLD } from "@/lib/config"
 import { Message } from "@ai-sdk/react"
-import { useCallback } from "react"
 
 type UseChatOperationsProps = {
   isAuthenticated: boolean
@@ -19,10 +18,6 @@ type UseChatOperationsProps = {
     systemPrompt?: string
   ) => Promise<Chats | undefined>
   setHasDialogAuth: (value: boolean) => void
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[])
-  ) => void
-  setInput: (input: string) => void
 }
 
 export function useChatOperations({
@@ -33,7 +28,6 @@ export function useChatOperations({
   systemPrompt,
   createNewChat,
   setHasDialogAuth,
-  setMessages,
 }: UseChatOperationsProps) {
   // Chat utilities
   const checkLimitsAndNotify = async (uid: string): Promise<boolean> => {
@@ -117,32 +111,9 @@ export function useChatOperations({
     return chatId
   }
 
-  // Message handlers
-  const handleDelete = useCallback(
-    (id: string) => {
-      setMessages(messages.filter((message) => message.id !== id))
-    },
-    [messages, setMessages]
-  )
-
-  const handleEdit = useCallback(
-    (id: string, newText: string) => {
-      setMessages(
-        messages.map((message) =>
-          message.id === id ? { ...message, content: newText } : message
-        )
-      )
-    },
-    [messages, setMessages]
-  )
-
   return {
     // Utils
     checkLimitsAndNotify,
     ensureChatExists,
-
-    // Handlers
-    handleDelete,
-    handleEdit,
   }
 }
