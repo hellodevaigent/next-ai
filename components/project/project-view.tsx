@@ -167,19 +167,6 @@ export function ProjectView({ projectId }: ProjectViewProps) {
       projectId,
     ]
   )
-
-  const { handleDelete, handleEdit } = useChatOperations({
-    isAuthenticated: true, // Always authenticated in project context
-    chatId: null,
-    messages,
-    selectedModel,
-    systemPrompt: SYSTEM_PROMPT_DEFAULT,
-    createNewChat,
-    setHasDialogAuth: () => {}, // Not used in project context
-    setMessages,
-    setInput,
-  })
-
   // Simple input change handler for project context (no draft saving needed)
   const handleInputChange = useCallback(
     (value: string) => {
@@ -323,11 +310,11 @@ export function ProjectView({ projectId }: ProjectViewProps) {
     () => ({
       messages,
       status,
-      onDelete: handleDelete,
-      onEdit: handleEdit,
+      onDelete: () => {},
+      onEdit: () => {},
       onReload: handleReload,
     }),
-    [messages, status, handleDelete, handleEdit, handleReload]
+    [messages, status, handleReload]
   )
 
   // Memoize the chat input props
