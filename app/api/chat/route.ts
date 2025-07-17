@@ -11,6 +11,7 @@ import {
   validateAndTrackUsage,
 } from "./api"
 import { createErrorResponse, extractErrorMessage } from "./utils"
+import { toolFunctions } from "@/lib/tools"
 
 export const maxDuration = 60
 
@@ -93,7 +94,7 @@ export async function POST(req: Request) {
       model: modelConfig.apiSdk(apiKey, { enableSearch }),
       system: effectiveSystemPrompt,
       messages: messages,
-      tools: {} as ToolSet,
+      tools: toolFunctions as ToolSet,
       maxSteps: 10,
       onError: (err: unknown) => {
         console.error("Streaming error occurred:", err)
@@ -105,8 +106,7 @@ export async function POST(req: Request) {
           await storeAssistantMessage({
             supabase,
             chatId,
-            messages:
-              response.messages as unknown as import("@/types/api.types").Message[],
+            messages: response.messages as unknown as import("@/types/api.types").Message[],
             message_group_id,
             model,
           })

@@ -14,11 +14,13 @@ type ConversationProps = {
   onDelete: (id: string) => void
   onEdit: (id: string, newText: string) => void
   onReload: () => void
+  isSubmitting?: boolean
 }
 
 export function Conversation({
   messages,
   status = "ready",
+  isSubmitting,
   onDelete,
   onEdit,
   onReload,
@@ -39,7 +41,7 @@ export function Conversation({
     return <div className="h-full w-full"></div>
 
   return (
-    <div className="relative flex h-full w-full flex-col items-center overflow-x-hidden overflow-y-auto scrollbar-layout">
+    <div className="scrollbar-layout relative flex h-full w-full flex-col items-center overflow-x-hidden overflow-y-auto">
       <div className="pointer-events-none absolute top-0 right-0 left-0 z-10 mx-auto flex w-full flex-col justify-center">
         <div className="h-app-header bg-background flex w-full" />
         <div className="h-app-header bg-background flex w-full mask-b-from-4% mask-b-to-100%" />
@@ -53,9 +55,12 @@ export function Conversation({
           }}
         >
           {messages?.map((message, index) => {
-            const isLast = index === messages.length - 1 && status !== "submitted"
-            const hasScrollAnchor = isLast && messages.length > initialMessageCount.current
-            const showEditButton = message.role === "user" && index === lastUserMessageIndex
+            const isLast =
+              index === messages.length - 1 && status !== "submitted"
+            const hasScrollAnchor =
+              isLast && messages.length > initialMessageCount.current
+            const showEditButton =
+              message.role === "user" && index === lastUserMessageIndex
 
             return (
               <Message
@@ -75,6 +80,11 @@ export function Conversation({
               </Message>
             )
           })}
+          {isSubmitting && (
+            <div className="group flex w-full max-w-3xl flex-col items-start gap-2 px-6 pt-4 pb-2">
+              <Loader />
+            </div>
+          )}
           {status === "submitted" &&
             messages.length > 0 &&
             messages[messages.length - 1].role === "user" && (

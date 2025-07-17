@@ -7,7 +7,7 @@ import { useChatLoading } from "@/lib/hooks/use-chat-loading"
 import { useChats } from "@/lib/store/chat-store/chats/provider"
 import { useMessages } from "@/lib/store/chat-store/messages/provider"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
-import { SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
+import { MODEL_DEFAULT, SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
 import { useModel } from "@/lib/hooks/use-model"
 import { useTitle } from "@/lib/hooks/use-title"
 import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
@@ -20,6 +20,7 @@ import { useChatCore } from "../../lib/hooks/use-chat-core"
 import { useChatOperations } from "../../lib/hooks/use-chat-operations"
 import { useFileUpload } from "../../lib/hooks/use-file-upload"
 import { ConversationSkeleton } from "../skeleton/conversation"
+import { toast } from "../ui/toast"
 
 // Lazy load heavy components
 const FeedbackWidget = lazy(() =>
@@ -135,6 +136,27 @@ export function ChatContainer() {
     [chatId, getChatById]
   )
 
+  const handleModelChange = useCallback(
+    async (newModel: string) => {
+      if (chatId) {
+        // Jika sudah ada chat, langsung perbarui di DB.
+        // UI akan otomatis update ketika `currentChat` berubah.
+        try {
+          await updateChatModel(chatId, newModel)
+        } catch (err) {
+          toast({
+            title: "Gagal memperbarui model",
+            status: "error",
+          })
+        }
+      } else {
+        // Jika ini chat baru, cukup perbarui state lokal.
+        setModelForNewChat(newModel)
+      }
+    },
+    [chatId, updateChatModel]
+  )
+
   const {
     messages: initialMessages,
     cacheAndAddMessage,
@@ -156,14 +178,6 @@ export function ChatContainer() {
     handleFileRemove,
   } = useFileUpload("CHAT_ATTACHMENTS")
 
-  // Model selection
-  const { selectedModel, handleModelChange } = useModel({
-    currentChat: currentChat || null,
-    user,
-    updateChatModel,
-    chatId,
-  })
-
   // State to pass between hooks
   const [hasDialogAuth, setHasDialogAuth] = useState(false)
   
@@ -173,6 +187,17 @@ export function ChatContainer() {
     () => user?.system_prompt || SYSTEM_PROMPT_DEFAULT,
     [user?.system_prompt]
   )
+
+   const [modelForNewChat, setModelForNewChat] = useState<string>(
+    () => user?.favorite_models?.[0] || MODEL_DEFAULT
+  )
+
+  const selectedModel = useMemo(() => {
+    if (currentChat?.model) {
+      return currentChat.model
+    }
+    return modelForNewChat
+  }, [currentChat, modelForNewChat])
 
   // Memoize callbacks for chat operations
   const setMessagesCallback = useCallback(() => {}, [])
@@ -281,6 +306,7 @@ export function ChatContainer() {
     () => ({
       messages,
       status,
+      isSubmitting,
       onDelete: handleDelete,
       onEdit: handleEdit,
       onReload: handleReload,

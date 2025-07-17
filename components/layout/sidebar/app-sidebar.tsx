@@ -61,7 +61,7 @@ const NavigationButtons = memo<NavigationButtonsProps>(
   ({ open, setOpenMobile, router, isMobile, handleSearchClick }) => (
     <div className="bg-sidebar sticky top-0 z-40 flex w-full flex-col items-start gap-0 border-b p-2">
       <button
-        className="hover:bg-accent/80 hover:text-foreground text-primary group/new-chat relative inline-flex w-full items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
+        className="hover:bg-accent/80 hover:text-foreground text-primary group/new-chat relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
         type="button"
         onClick={() => {
           setOpenMobile(false)
@@ -86,7 +86,7 @@ const NavigationButtons = memo<NavigationButtonsProps>(
 
       {isMobile ? (
         <button
-          className="hover:bg-accent/80 hover:text-foreground text-primary group/search relative inline-flex w-full items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
+          className="hover:bg-accent/80 hover:text-foreground text-primary group/search relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
           type="button"
           onClick={handleSearchClick}
         >
@@ -132,7 +132,7 @@ const NavigationButtons = memo<NavigationButtonsProps>(
       )}
 
       <button
-        className="hover:bg-accent/80 hover:text-foreground text-primary group/new-chat relative inline-flex w-full items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
+        className="hover:bg-accent/80 hover:text-foreground text-primary group/new-chat relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
         type="button"
         onClick={() => {
           setOpenMobile(false)
@@ -149,9 +149,6 @@ const NavigationButtons = memo<NavigationButtonsProps>(
           )}
         >
           Project
-          <span className="text-muted-foreground ml-auto text-xs opacity-0 transition-opacity duration-150 group-hover/new-chat:opacity-100">
-            ⌘⇧U
-          </span>
         </span>
       </button>
     </div>
@@ -196,10 +193,12 @@ const ChatContent = memo<ChatContentProps>(
 
     return (
       <ul className="mt-3 flex w-full min-w-0 flex-col gap-0.5">
-        <div className={cn(
-          "border-border mx-2 h-16 content-center rounded-lg border px-8 text-center duration-500 text-nowrap text-xs text-gray-500",
-          !open && "opacity-0"
-        )}>
+        <div
+          className={cn(
+            "border-border mx-2 h-16 content-center rounded-lg border px-8 text-center text-xs text-nowrap text-gray-500 duration-500",
+            !open && "opacity-0"
+          )}
+        >
           You haven't created any chats yet.
         </div>
       </ul>
