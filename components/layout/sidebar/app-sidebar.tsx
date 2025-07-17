@@ -59,7 +59,12 @@ interface ChatContentProps {
 // Memoize navigation buttons
 const NavigationButtons = memo<NavigationButtonsProps>(
   ({ open, setOpenMobile, router, isMobile, handleSearchClick }) => (
-    <div className="bg-sidebar sticky top-0 z-40 flex w-full flex-col items-start gap-0 border-b p-2">
+    <div
+      className={cn(
+        "sticky top-0 z-40 flex w-full flex-col items-start gap-0 border-b p-2 transition-colors duration-200",
+        open ? "bg-sidebar" : ""
+      )}
+    >
       <button
         className="hover:bg-accent/80 hover:text-foreground text-primary group/new-chat relative inline-flex w-full cursor-pointer items-center rounded-md bg-transparent px-2 py-2 text-sm transition-colors"
         type="button"
@@ -288,7 +293,7 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
       variant="sidebar"
-      className="overflow-hidden border-none"
+      className="overflow-hidden border"
     >
       <SidebarHeader className="h-app-header border-b">
         <div className="flex items-center justify-between">
