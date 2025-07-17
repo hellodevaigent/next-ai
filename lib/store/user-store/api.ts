@@ -8,25 +8,33 @@ export async function fetchUserProfile(
   const supabase = createClient()
   if (!supabase) return null
 
-  const { data, error } = await supabase
+  const { data: userData, error: userError } = await supabase
     .from("users")
     .select("*")
     .eq("id", id)
     .single()
 
-  if (error || !data) {
-    console.error("Failed to fetch user:", error)
+  if (userError) {
+    console.error("Failed to fetch user from 'users' table:", userError)
+  }
+
+  const { data: authData, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !authData.user) {
+    console.error("Failed to fetch user from auth:", authError)
     return null
   }
 
   // Don't return anonymous users
-  if (data.anonymous) return null
+  if (userData?.anonymous) return null
 
   return {
-    ...data,
-    profile_image: data.profile_image || "",
-    display_name: data.display_name || "",
-  }
+    ...(userData || {}),
+    id: authData.user.id,
+    email: authData.user.email || "",
+    profile_image: authData.user.user_metadata?.avatar_url || null,
+    display_name: authData.user.user_metadata?.name || "",
+  } as UserProfile
 }
 
 export async function updateUserProfile(

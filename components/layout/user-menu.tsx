@@ -38,7 +38,9 @@ export function UserMenu() {
         <TooltipTrigger asChild>
           <DropdownMenuTrigger>
             <Avatar className="!size-7 bg-background hover:bg-muted">
-              <AvatarImage className="!size-7" src={user?.profile_image ?? undefined} />
+              {user?.profile_image && (
+                <AvatarImage className="!size-7" src={user.profile_image} />
+              )}
               <AvatarFallback className="!size-7">{user?.display_name?.charAt(0)}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>

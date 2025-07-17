@@ -16,7 +16,9 @@ export function UserProfile() {
         <div className="bg-muted flex items-center justify-center overflow-hidden rounded-full">
           {user?.profile_image ? (
             <Avatar className="size-12">
-              <AvatarImage src={user.profile_image} className="object-cover" />
+              {user?.profile_image && (
+                <AvatarImage src={user.profile_image} className="object-cover" />
+              )}
               <AvatarFallback>{user?.display_name?.charAt(0)}</AvatarFallback>
             </Avatar>
           ) : (

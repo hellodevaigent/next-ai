@@ -49,7 +49,7 @@ export async function getUserProfile(): Promise<UserProfile | null> {
 
   return {
     ...userProfileData,
-    profile_image: user.user_metadata?.avatar_url ?? "",
+    profile_image: user.user_metadata?.avatar_url ?? null,
     display_name: user.user_metadata?.name ?? "",
     preferences: formattedPreferences,
   } as UserProfile

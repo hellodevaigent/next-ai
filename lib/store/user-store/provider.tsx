@@ -27,17 +27,19 @@ export function UserProvider({
   initialUser: UserProfile | null
 }) {
   const [user, setUser] = useState<UserProfile | null>(initialUser)
+  console.log(user)
   const [isLoading, setIsLoading] = useState(false)
 
   const refreshUser = async () => {
     if (!user?.id) return
 
-    setIsLoading(true)
     try {
       const updatedUser = await fetchUserProfile(user.id)
-      if (updatedUser) setUser(updatedUser)
-    } finally {
-      setIsLoading(false)
+      if (updatedUser) {
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error("Failed to refresh user:", error);
     }
   }
 

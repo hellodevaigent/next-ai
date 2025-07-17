@@ -58,10 +58,12 @@ export function UserMenuSidebar() {
             avatarSize
           )}
         >
-          <AvatarImage
-            className={cn("transition-all", avatarSize)}
-            src={user?.profile_image ?? undefined}
-          />
+          {user?.profile_image && (
+            <AvatarImage
+              className={cn("transition-all", avatarSize)}
+              src={user?.profile_image ?? undefined}
+            />
+          )}
           <AvatarFallback className={cn("transition-all", avatarSize)}>
             {user?.display_name?.charAt(0)}
           </AvatarFallback>
