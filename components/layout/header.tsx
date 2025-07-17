@@ -14,6 +14,7 @@ import { Skeleton } from "../skeleton/skeleton"
 import { useSidebar } from "../ui/sidebar"
 import { DialogPublish } from "./dialog-publish"
 import { UserMenu } from "./user-menu"
+import { DialogConnectWallet } from "./dialog-connect-wallet"
 
 export function Header({ hasSidebar }: { hasSidebar: boolean }) {
   const isMobile = useBreakpoint(768)
@@ -81,6 +82,9 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
             </div>
           ) : (
             <div className="pointer-events-auto flex flex-1 items-center justify-end gap-2">
+              <DialogConnectWallet
+                onWalletVerified={() => console.log("Wallet verified")}
+              />
               <DialogPublish />
               {!hasSidebar && <ButtonNewChat />}
               {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}

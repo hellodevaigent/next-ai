@@ -16,6 +16,7 @@ import { LayoutClient } from "./layout-client"
 import "./globals.css"
 import "keen-slider/keen-slider.min.css"
 import { ProjectsProvider } from "@/lib/store/project-store/provider"
+import { Web3Provider } from "@/lib/web3/web3-provider"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,35 +57,37 @@ export default async function RootLayout({
         <TanstackQueryProvider>
           <LayoutClient />
           <UserProvider initialUser={userProfile}>
-            <ModelProvider>
-              <ChatsProvider userId={userProfile?.id}>
-                <ProjectsProvider userId={userProfile?.id}>
-                  <ChatSessionProvider>
-                    <UserPreferencesProvider
-                      userId={userProfile?.id}
-                      initialPreferences={userProfile?.preferences}
-                    >
-                      <TooltipProvider
-                        delayDuration={200}
-                        skipDelayDuration={500}
+            <Web3Provider>
+              <ModelProvider>
+                <ChatsProvider userId={userProfile?.id}>
+                  <ProjectsProvider userId={userProfile?.id}>
+                    <ChatSessionProvider>
+                      <UserPreferencesProvider
+                        userId={userProfile?.id}
+                        initialPreferences={userProfile?.preferences}
                       >
-                        <ThemeProvider
-                          attribute="class"
-                          defaultTheme="light"
-                          enableSystem
-                          disableTransitionOnChange
+                        <TooltipProvider
+                          delayDuration={200}
+                          skipDelayDuration={500}
                         >
-                          <SidebarProvider defaultOpen>
-                            <Toaster position="top-center" />
-                            {children}
-                          </SidebarProvider>
-                        </ThemeProvider>
-                      </TooltipProvider>
-                    </UserPreferencesProvider>
-                  </ChatSessionProvider>
-                </ProjectsProvider>
-              </ChatsProvider>
-            </ModelProvider>
+                          <ThemeProvider
+                            attribute="class"
+                            defaultTheme="light"
+                            enableSystem
+                            disableTransitionOnChange
+                          >
+                            <SidebarProvider defaultOpen>
+                              <Toaster position="top-center" />
+                              {children}
+                            </SidebarProvider>
+                          </ThemeProvider>
+                        </TooltipProvider>
+                      </UserPreferencesProvider>
+                    </ChatSessionProvider>
+                  </ProjectsProvider>
+                </ChatsProvider>
+              </ModelProvider>
+            </Web3Provider>
           </UserProvider>
         </TanstackQueryProvider>
       </body>
