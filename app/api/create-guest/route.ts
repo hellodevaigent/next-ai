@@ -12,7 +12,6 @@ export async function POST(request: Request) {
 
     const supabase = await createGuestServerClient()
     if (!supabase) {
-      console.log("Supabase not enabled, skipping guest creation.")
       return new Response(
         JSON.stringify({ user: { id: userId, anonymous: true } }),
         {

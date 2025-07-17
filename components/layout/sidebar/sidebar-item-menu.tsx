@@ -1,19 +1,19 @@
-import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import { useChats } from "@/lib/store/chat-store/chats/provider"
-import { useMessages } from "@/lib/store/chat-store/messages/provider"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
 import { Chat } from "@/lib/store/chat-store/types"
+import { cn } from "@/lib/utils"
 import { DotsThree, PencilSimple, Star, Trash } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { DialogDeleteChat } from "../../project/dialog-delete-chat"
-import { cn } from "@/lib/utils"
+import { useState } from "react"
+import { DialogDeleteChat } from "../../chat/dialog-delete-chat"
+import { useMessages } from "@/lib/store/chat-store/messages/provider"
 
 type SidebarItemMenuProps = {
   chat: Chat
@@ -38,8 +38,20 @@ export function SidebarItemMenu({
   const isFavorite = favorites.includes(chat.id)
 
   const handleConfirmDelete = async () => {
-    await deleteMessages()
-    await deleteChat(chat.id, chatId!, () => router.push("/"))
+    const isCurrentChat = chat.id === chatId
+    
+    if (isCurrentChat) {
+      router.push("/")
+      
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    
+    await deleteMessages(chat.id)
+    await deleteChat(chat.id, chatId!, () => {
+      if (!isCurrentChat) {
+        router.push("/")
+      }
+    })
   }
 
   const handleMenuOpenChange = (open: boolean) => {
@@ -48,15 +60,15 @@ export function SidebarItemMenu({
   }
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
-    setIsMenuOpen(false);
-    onMenuOpenChange?.(false);
-    onFavoriteToggle?.();
-    
-    await toggleFavorite(chat.id);
-  };
+    setIsMenuOpen(false)
+    onMenuOpenChange?.(false)
+    onFavoriteToggle?.()
+
+    await toggleFavorite(chat.id)
+  }
 
   return (
     <>

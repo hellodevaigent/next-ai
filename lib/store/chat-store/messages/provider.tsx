@@ -21,7 +21,7 @@ interface MessagesContextType {
   saveAllMessages: (messages: MessageAISDK[]) => Promise<void>
   cacheAndAddMessage: (message: MessageAISDK) => Promise<void>
   resetMessages: () => Promise<void>
-  deleteMessages: () => Promise<void>
+  deleteMessages: (targetChatId?: string) => Promise<void> 
 }
 
 const MessagesContext = createContext<MessagesContextType | null>(null)
@@ -104,11 +104,15 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const deleteMessages = async () => {
-    if (!chatId) return
+  const deleteMessages = async (targetChatId?: string) => {
+    const chatToDelete = targetChatId || chatId
+    if (!chatToDelete) return
 
-    setMessages([])
-    await clearMessagesForChat(chatId)
+    if (chatToDelete === chatId) {
+      setMessages([])
+    }
+    
+    await clearMessagesForChat(chatToDelete)
   }
 
   const resetMessages = async () => {

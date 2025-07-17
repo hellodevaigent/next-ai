@@ -27,7 +27,6 @@ export function UserProvider({
   initialUser: UserProfile | null
 }) {
   const [user, setUser] = useState<UserProfile | null>(initialUser)
-  console.log(user)
   const [isLoading, setIsLoading] = useState(false)
 
   const refreshUser = async () => {

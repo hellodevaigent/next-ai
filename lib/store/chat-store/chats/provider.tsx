@@ -12,7 +12,7 @@ import {
   useState,
 } from "react"
 import { MODEL_DEFAULT, SYSTEM_PROMPT_DEFAULT } from "../../../config"
-import { deleteFromIndexedDB, STORE_NAMES } from "../../persist"
+import { clearMessagesForChat } from "../messages/api"
 import type { Chats } from "../types"
 import { useFavoriteChats } from "../use-chat"
 import {
@@ -145,7 +145,10 @@ export function ChatsProvider({
     try {
       await deleteChatAttachments(id)
       await deleteChatFromDb(id)
-      if (id === currentChatId && redirect) redirect()
+      
+      if (id === currentChatId && redirect) {
+        redirect()
+      }
     } catch {
       setChats(prev)
       toast({ title: "Failed to delete chat", status: "error" })
