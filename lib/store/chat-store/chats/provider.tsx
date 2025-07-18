@@ -12,7 +12,6 @@ import {
   useState,
 } from "react"
 import { MODEL_DEFAULT, SYSTEM_PROMPT_DEFAULT } from "../../../config"
-import { clearMessagesForChat } from "../messages/api"
 import type { Chats } from "../types"
 import { useFavoriteChats } from "../use-chat"
 import {
@@ -90,7 +89,7 @@ export function ChatsProvider({
       setChats(cached)
 
       try {
-        const fresh = await fetchAndCacheChats(userId)
+        const fresh = await fetchAndCacheChats()
         setChats(fresh)
       } finally {
         setIsLoading(false)
@@ -116,7 +115,7 @@ export function ChatsProvider({
   const refresh = async () => {
     if (!userId) return
 
-    const fresh = await fetchAndCacheChats(userId)
+    const fresh = await fetchAndCacheChats()
     setChats(fresh)
   }
 

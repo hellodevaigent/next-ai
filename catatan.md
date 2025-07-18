@@ -1,0 +1,1 @@
+1. Bug ketika model api key di hapus dan masuk favorit itu tidak terhapus yang di favoritnya

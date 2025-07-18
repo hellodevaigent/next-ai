@@ -1,4 +1,18 @@
-export const API_ROUTE_CHAT = "/api/chat"
 export const API_ROUTE_CREATE_GUEST = "/api/create-guest"
 export const API_ROUTE_UPDATE_CHAT_MODEL = "/api/update-chat-model"
 export const API_ROUTE_CSRF = "/api/csrf"
+export const API_ROUTE_ATTACHMENTS = "/api/attachments"
+export const API_ROUTE_FEEDBACK = "/api/feedback"
+
+export const API_ROUTE_CREATE_CHAT = "/api/create-chat"
+export const API_ROUTE_CHATS = "/api/chat"
+export const API_ROUTE_FAVORITE_CHAT = "/api/favorite-chat"
+export const API_ROUTE_CONVERSATION = "/api/conversation"
+export const API_ROUTE_PROJECTS = "/api/projects"
+export const API_ROUTE_FAVORITE_PROJECT = "/api/favorite-project"
+
+export const API_ROUTE_UP = "/api/user-preferences"
+export const API_ROUTE_MODELS = "/api/models"
+export const API_ROUTE_UP_FAVORITE_MODELS = "/api/user-preferences/favorite-models"
+
+export const API_ROUTE_USER_KEYS = "/api/user-key-status"

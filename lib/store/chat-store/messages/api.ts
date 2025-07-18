@@ -1,7 +1,13 @@
-import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import type { Message as MessageAISDK } from "ai"
 import { readFromIndexedDB, writeToIndexedDB } from "../../persist"
+import { fetchClient } from "@/lib/fetch"
+import { API_ROUTE_CONVERSATION } from "@/lib/routes"
+
+type ChatMessageEntry = {
+  id: string
+  messages: MessageAISDK[]
+}
 
 export async function getMessagesFromDb(
   chatId: string
@@ -12,84 +18,75 @@ export async function getMessagesFromDb(
     return cached
   }
 
-  const supabase = createClient()
-  if (!supabase) return []
+  const response = await fetchClient(`${API_ROUTE_CONVERSATION}/${chatId}`)
 
-  const { data, error } = await supabase
-    .from("messages")
-    .select(
-      "id, content, role, experimental_attachments, created_at, parts, message_group_id, model"
-    )
-    .eq("chat_id", chatId)
-    .order("created_at", { ascending: true })
-
-  if (!data || error) {
-    console.error("Failed to fetch messages:", error)
-    return []
+  if (!response.ok) {
+    throw new Error("Failed to fetch messages")
   }
 
-  return data.map((message) => ({
-    ...message,
-    id: String(message.id),
-    content: message.content ?? "",
-    createdAt: new Date(message.created_at || ""),
-    parts: (message?.parts as MessageAISDK["parts"]) || undefined,
-    message_group_id: message.message_group_id,
-    model: message.model,
-  }))
+  return await response.json()
 }
 
 async function insertMessageToDb(chatId: string, message: MessageAISDK) {
-  const supabase = createClient()
-  if (!supabase) return
+  if (!isSupabaseEnabled) return
 
-  await supabase.from("messages").insert({
-    chat_id: chatId,
-    role: message.role,
-    content: message.content,
-    experimental_attachments: message.experimental_attachments,
-    created_at: message.createdAt?.toISOString() || new Date().toISOString(),
-    message_group_id: (message as any).message_group_id || null,
-    model: (message as any).model || null,
+  const response = await fetchClient(`${API_ROUTE_CONVERSATION}/${chatId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ message }),
   })
-}
 
-async function insertMessagesToDb(chatId: string, messages: MessageAISDK[]) {
-  const supabase = createClient()
-  if (!supabase) return
-
-  const payload = messages.map((message) => ({
-    chat_id: chatId,
-    role: message.role,
-    content: message.content,
-    experimental_attachments: message.experimental_attachments,
-    created_at: message.createdAt?.toISOString() || new Date().toISOString(),
-    message_group_id: (message as any).message_group_id || null,
-    model: (message as any).model || null,
-  }))
-
-  await supabase.from("messages").insert(payload)
-}
-
-async function deleteMessagesFromDb(chatId: string) {
-  const supabase = createClient()
-  if (!supabase) return
-
-  const { error } = await supabase
-    .from("messages")
-    .delete()
-    .eq("chat_id", chatId)
-
-  if (error) {
-    console.error("Failed to clear messages from database:", error)
+  if (!response.ok) {
+    throw new Error("Failed to insert message")
   }
 }
 
-type ChatMessageEntry = {
-  id: string
-  messages: MessageAISDK[]
+async function insertMessagesToDb(chatId: string, messages: MessageAISDK[]) {
+  if (!isSupabaseEnabled) return
+
+  const response = await fetchClient(`${API_ROUTE_CONVERSATION}/${chatId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ messages }),
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to insert messages")
+  }
 }
 
+async function deleteMessagesFromDb(chatId: string) {
+  if (!isSupabaseEnabled) return
+
+  const response = await fetchClient(`${API_ROUTE_CONVERSATION}/${chatId}`, {
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to delete messages")
+  }
+}
+
+export async function deleteMessagesFromDbByMessageId(
+  chatId: string, 
+  messageId: string,
+) {
+  if (!isSupabaseEnabled) return
+
+  const response = await fetchClient(`${API_ROUTE_CONVERSATION}/${chatId}?messageId=${messageId}`, {
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to delete messages from anchor")
+  }
+}
+
+// LocalIndxedDB
 export async function getCachedMessages(
   chatId: string
 ): Promise<MessageAISDK[]> {

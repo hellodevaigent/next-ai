@@ -1,13 +1,19 @@
 "use client"
 
 import { toast } from "@/components/ui/toast"
-import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react"
 import {
   createNewProject as apiCreate,
   deleteProject as apiDelete,
+  updateProject as apiUpdate,
   getCachedProjects,
   syncProjects,
-  updateProject as apiUpdate,
 } from "./api"
 import type { Project } from "./types"
 
@@ -35,7 +41,7 @@ export function ProjectsProvider({
   children,
   userId,
 }: {
-  children: React.ReactNode,
+  children: React.ReactNode
   userId?: string
 }) {
   const [projects, setProjects] = useState<Project[]>([])
@@ -43,22 +49,22 @@ export function ProjectsProvider({
 
   useEffect(() => {
     if (!userId) {
-        setIsLoading(false)
-        setProjects([])
-        return
-    };
+      setIsLoading(false)
+      setProjects([])
+      return
+    }
 
-    setIsLoading(true);
+    setIsLoading(true)
 
-    getCachedProjects().then(cachedProjects => {
+    getCachedProjects().then((cachedProjects) => {
       setProjects(cachedProjects)
     })
 
     syncProjects()
-      .then(freshProjects => {
+      .then((freshProjects) => {
         setProjects(freshProjects)
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error during initial project sync:", error)
         toast({ title: "Could not fetch latest projects.", status: "error" })
       })
@@ -67,9 +73,12 @@ export function ProjectsProvider({
       })
   }, [userId])
 
-  const getProjectById = useCallback((id: string) => {
-    return projects.find(p => p.id === id)
-  }, [projects])
+  const getProjectById = useCallback(
+    (id: string) => {
+      return projects.find((p) => p.id === id)
+    },
+    [projects]
+  )
 
   const refreshProjects = useCallback(async () => {
     setIsLoading(true)
@@ -86,40 +95,56 @@ export function ProjectsProvider({
   const createProject = useCallback(async (name: string) => {
     try {
       const newProject = await apiCreate(name)
-      setProjects(prev => [newProject, ...prev])
+      setProjects((prev) => [newProject, ...prev])
       toast({ title: "Project created!", status: "success" })
       return newProject
     } catch (error: any) {
-      toast({ title: "Failed to create project", description: error.message, status: "error" })
+      toast({
+        title: "Failed to create project",
+        description: error.message,
+        status: "error",
+      })
     }
   }, [])
 
-  const updateProjectName = useCallback(async (id: string, name: string) => {
-    const originalProjects = [...projects]
-    // Optimistic update
-    setProjects(prev =>
-      prev.map(p => (p.id === id ? { ...p, name } : p))
-    )
-    try {
-      await apiUpdate(id, name)
-    } catch (error: any) {
-      setProjects(originalProjects)
-      toast({ title: "Failed to update project", description: error.message, status: "error" })
-    }
-  }, [projects])
+  const updateProjectName = useCallback(
+    async (id: string, name: string) => {
+      const originalProjects = [...projects]
+      // Optimistic update
+      setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)))
+      try {
+        await apiUpdate(id, name)
+      } catch (error: any) {
+        setProjects(originalProjects)
+        toast({
+          title: "Failed to update project",
+          description: error.message,
+          status: "error",
+        })
+      }
+    },
+    [projects]
+  )
 
-  const deleteProject = useCallback(async (id: string) => {
-    const originalProjects = [...projects]
-    // Optimistic update
-    setProjects(prev => prev.filter(p => p.id !== id))
-    try {
-      await apiDelete(id)
-      toast({ title: "Project deleted", status: "success" })
-    } catch (error: any) {
-      setProjects(originalProjects) // Rollback
-      toast({ title: "Failed to delete project", description: error.message, status: "error" })
-    }
-  }, [projects])
+  const deleteProject = useCallback(
+    async (id: string) => {
+      const originalProjects = [...projects]
+      // Optimistic update
+      setProjects((prev) => prev.filter((p) => p.id !== id))
+      try {
+        await apiDelete(id)
+        toast({ title: "Project deleted", status: "success" })
+      } catch (error: any) {
+        setProjects(originalProjects) // Rollback
+        toast({
+          title: "Failed to delete project",
+          description: error.message,
+          status: "error",
+        })
+      }
+    },
+    [projects]
+  )
 
   const value = {
     projects,

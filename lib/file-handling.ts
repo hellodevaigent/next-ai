@@ -1,9 +1,8 @@
 import { toast } from "@/components/ui/toast"
 import { DAILY_FILE_UPLOAD_LIMIT } from "./config"
-import { createClient } from "./supabase/client"
-import { isSupabaseEnabled } from "./supabase/config"
-import { r2UploadService } from "@/lib/r2/upload-service"
-import { UPLOAD_CONFIGS } from "@/lib/r2/configs"
+import { UPLOAD_CONFIGS } from "./r2/configs"
+import { r2UploadService } from "./r2/upload-service"
+import { API_ROUTE_ATTACHMENTS } from "./routes"
 
 export type Attachment = {
   name: string
@@ -19,7 +18,7 @@ export async function uploadToR2(file: File, uploadType: UploadType = 'CHAT_ATTA
     formData.append("file", file)
     formData.append("type", uploadType)
 
-    const response = await fetch("/api/upload", {
+    const response = await fetch(`${API_ROUTE_ATTACHMENTS}/upload`, {
       method: "POST",
       body: formData,
     })
@@ -67,55 +66,19 @@ export async function deleteFilesFromR2(
  * Delete attachments by chat ID
  */
 export async function deleteChatAttachments(chatId: string): Promise<boolean> {
-  if (!isSupabaseEnabled) {
-    console.log('Supabase not enabled, skipping attachment deletion')
-    return true
-  }
-
-  const supabase = createClient()
-  if (!supabase) {
-    console.error('Supabase client not available')
-    return false
-  }
-
   try {
-    // Get all attachments for this chat
-    const { data: attachments, error: fetchError } = await supabase
-      .from("chat_attachments")
-      .select("file_url, file_name")
-      .eq("chat_id", chatId)
+    const response = await fetch(`/api/attachments/chat/${chatId}`, {
+      method: "DELETE",
+    })
 
-    if (fetchError) {
-      console.error('Error fetching attachments:', fetchError)
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('Error deleting chat attachments:', errorData.error)
       return false
     }
 
-    if (!attachments || attachments.length === 0) {
-      console.log('No attachments found for chat:', chatId)
-      return true
-    }
-
-    // Extract file URLs
-    const fileUrls = attachments.map(att => att.file_url)
-    
-    // Delete files from R2
-    const deleteResult = await deleteFilesFromR2(fileUrls, 'CHAT_ATTACHMENTS')
-    
-    // Delete records from database
-    const { error: deleteError } = await supabase
-      .from("chat_attachments")
-      .delete()
-      .eq("chat_id", chatId)
-
-    if (deleteError) {
-      console.error('Error deleting attachment records:', deleteError)
-      return false
-    }
-
-    console.log(`Deleted ${deleteResult.success} files from R2, ${deleteResult.failed} failed`)
-    console.log(`Deleted ${attachments.length} attachment records from database`)
-    
-    return true
+    const result = await response.json()    
+    return result.success
   } catch (error) {
     console.error('Error deleting chat attachments:', error)
     return false
@@ -126,55 +89,20 @@ export async function deleteChatAttachments(chatId: string): Promise<boolean> {
  * Delete attachments by user ID (for user deletion)
  */
 export async function deleteUserAttachments(userId: string): Promise<boolean> {
-  if (!isSupabaseEnabled) {
-    console.log('Supabase not enabled, skipping attachment deletion')
-    return true
-  }
-
-  const supabase = createClient()
-  if (!supabase) {
-    console.error('Supabase client not available')
-    return false
-  }
-
   try {
-    // Get all attachments for this user
-    const { data: attachments, error: fetchError } = await supabase
-      .from("chat_attachments")
-      .select("file_url, file_name")
-      .eq("user_id", userId)
+    const response = await fetch(`/api/attachments/user/${userId}`, {
+      method: "DELETE",
+    })
 
-    if (fetchError) {
-      console.error('Error fetching user attachments:', fetchError)
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('Error deleting user attachments:', errorData.error)
       return false
     }
 
-    if (!attachments || attachments.length === 0) {
-      console.log('No attachments found for user:', userId)
-      return true
-    }
-
-    // Group by upload type if needed (assuming all are CHAT_ATTACHMENTS for now)
-    const fileUrls = attachments.map(att => att.file_url)
+    const result = await response.json()
     
-    // Delete files from R2
-    const deleteResult = await deleteFilesFromR2(fileUrls, 'CHAT_ATTACHMENTS')
-    
-    // Delete records from database
-    const { error: deleteError } = await supabase
-      .from("chat_attachments")
-      .delete()
-      .eq("user_id", userId)
-
-    if (deleteError) {
-      console.error('Error deleting user attachment records:', deleteError)
-      return false
-    }
-
-    console.log(`Deleted ${deleteResult.success} files from R2, ${deleteResult.failed} failed`)
-    console.log(`Deleted ${attachments.length} attachment records from database`)
-    
-    return true
+    return result.success
   } catch (error) {
     console.error('Error deleting user attachments:', error)
     return false
@@ -189,44 +117,26 @@ export async function deleteAttachment(
   fileUrl: string, 
   uploadType: UploadType = 'CHAT_ATTACHMENTS'
 ): Promise<boolean> {
-  if (!isSupabaseEnabled) {
-    console.log('Supabase not enabled, skipping attachment deletion')
-    return true
-  }
-
-  const supabase = createClient()
-  if (!supabase) {
-    console.error('Supabase client not available')
-    return false
-  }
-
   try {
-    // Delete from R2
-    const config = UPLOAD_CONFIGS[uploadType]
-    if (!config) {
-      console.error('Invalid upload type:', uploadType)
+    const response = await fetch(`/api/attachments/${attachmentId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fileUrl,
+        uploadType,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('Error deleting attachment:', errorData.error)
       return false
     }
 
-    const deleted = await r2UploadService.deleteFile(fileUrl, config)
-    
-    if (deleted) {
-      // Delete from database
-      const { error: deleteError } = await supabase
-        .from("chat_attachments")
-        .delete()
-        .eq("id", attachmentId)
-
-      if (deleteError) {
-        console.error('Error deleting attachment record:', deleteError)
-        return false
-      }
-
-      console.log(`Successfully deleted attachment: ${attachmentId}`)
-      return true
-    }
-
-    return false
+    const result = await response.json()
+    return result.success
   } catch (error) {
     console.error('Error deleting attachment:', error)
     return false
@@ -247,7 +157,6 @@ export async function processFiles(
   userId: string,
   uploadType: UploadType = 'CHAT_ATTACHMENTS'
 ): Promise<Attachment[]> {
-  const supabase = isSupabaseEnabled ? createClient() : null
   const attachments: Attachment[] = []
 
   for (const file of files) {
@@ -255,22 +164,27 @@ export async function processFiles(
       // Upload to R2
       const url = await uploadToR2(file, uploadType)
 
-      // Save metadata to Supabase database
-      if (supabase) {
-        const { error } = await supabase.from("chat_attachments").insert({
+      // Save metadata to database via API
+      const response = await fetch("/api/attachments/metadata", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           chat_id: chatId,
           user_id: userId,
           file_url: url,
           file_name: file.name,
           file_type: file.type,
           file_size: file.size,
-        })
+        }),
+      })
 
-        if (error) {
-          // If database insertion fails, try to delete the uploaded file
-          await deleteFilesFromR2([url], uploadType)
-          throw new Error(`Database insertion failed: ${error.message}`)
-        }
+      if (!response.ok) {
+        // If database insertion fails, try to delete the uploaded file
+        await deleteFilesFromR2([url], uploadType)
+        const errorData = await response.json()
+        throw new Error(`Database insertion failed: ${errorData.error}`)
       }
 
       attachments.push(createAttachment(file, url))
@@ -287,7 +201,6 @@ export async function processFiles(
   return attachments
 }
 
-// Rest of your existing code...
 export class FileUploadLimitError extends Error {
   code: string
   constructor(message: string) {
@@ -297,33 +210,35 @@ export class FileUploadLimitError extends Error {
 }
 
 export async function checkFileUploadLimit(userId: string) {
-  if (!isSupabaseEnabled) return 0
-
-  const supabase = createClient()
-
-  if (!supabase) {
-    toast({
-      title: "File upload is not supported in this deployment",
-      status: "info",
+  try {
+    const response = await fetch(`/api/attachments/check-limit/${userId}`, {
+      method: "GET",
     })
-    return 0
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      if (errorData.error === "File upload is not supported in this deployment") {
+        toast({
+          title: "File upload is not supported in this deployment",
+          status: "info",
+        })
+        return 0
+      }
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+    }
+
+    const result = await response.json()
+    
+    if (result.limitReached) {
+      throw new FileUploadLimitError("Daily file upload limit reached.")
+    }
+
+    return result.count
+  } catch (error) {
+    if (error instanceof FileUploadLimitError) {
+      throw error
+    }
+    console.error('Error checking file upload limit:', error)
+    throw new Error('Failed to check file upload limit')
   }
-
-  const now = new Date()
-  const startOfToday = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  )
-
-  const { count, error } = await supabase
-    .from("chat_attachments")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .gte("created_at", startOfToday.toISOString())
-
-  if (error) throw new Error(error.message)
-  if (count && count >= DAILY_FILE_UPLOAD_LIMIT) {
-    throw new FileUploadLimitError("Daily file upload limit reached.")
-  }
-
-  return count
 }

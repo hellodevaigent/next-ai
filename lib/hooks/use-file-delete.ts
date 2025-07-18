@@ -1,6 +1,7 @@
 import { toast } from "@/components/ui/toast"
 import { UploadType } from "@/lib/file-handling"
 import { useCallback, useState } from "react"
+import { API_ROUTE_ATTACHMENTS } from "../routes"
 
 export const useFileDelete = () => {
   const [isDeleting, setIsDeleting] = useState(false)
@@ -19,7 +20,7 @@ export const useFileDelete = () => {
       setIsDeleting(true)
 
       try {
-        const response = await fetch("/api/upload/delete", {
+        const response = await fetch(`${API_ROUTE_ATTACHMENTS}/delete`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -78,7 +79,7 @@ export const useFileDelete = () => {
       setIsDeleting(true)
 
       try {
-        const response = await fetch("/api/upload/delete", {
+        const response = await fetch(`${API_ROUTE_ATTACHMENTS}/delete`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -141,7 +142,7 @@ export const useFileDelete = () => {
       setIsDeleting(true)
 
       try {
-        const response = await fetch("/api/upload/delete", {
+        const response = await fetch(`${API_ROUTE_ATTACHMENTS}/delete`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -205,7 +206,7 @@ export const useFileDelete = () => {
       setIsDeleting(true)
 
       try {
-        const response = await fetch("/api/upload/delete", {
+        const response = await fetch(`${API_ROUTE_ATTACHMENTS}/delete`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",

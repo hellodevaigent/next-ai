@@ -33,7 +33,7 @@ export function UserProvider({
     if (!user?.id) return
 
     try {
-      const updatedUser = await fetchUserProfile(user.id)
+      const updatedUser = await fetchUserProfile()
       if (updatedUser) {
         setUser(updatedUser);
       }
@@ -47,7 +47,7 @@ export function UserProvider({
 
     setIsLoading(true)
     try {
-      const success = await updateUserProfile(user.id, updates)
+      const success = await updateUserProfile(updates)
       if (success) {
         setUser((prev) => (prev ? { ...prev, ...updates } : null))
       }

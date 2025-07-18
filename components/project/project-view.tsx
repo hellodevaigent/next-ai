@@ -13,7 +13,7 @@ import { Attachment } from "@/lib/file-handling"
 import { useFileUpload } from "@/lib/hooks/use-file-upload"
 import { useModel } from "@/lib/hooks/use-model"
 import { useTitle } from "@/lib/hooks/use-title"
-import { API_ROUTE_CHAT } from "@/lib/routes"
+import { API_ROUTE_CONVERSATION } from "@/lib/routes"
 import { useUser } from "@/lib/store/user-store/provider"
 import { cn } from "@/lib/utils"
 import { useChat } from "@ai-sdk/react"
@@ -96,7 +96,7 @@ export function ProjectView({ projectId }: ProjectViewProps) {
     setInput,
   } = useChat({
     id: `project-${projectId}-${currentChatId}`,
-    api: API_ROUTE_CHAT,
+    api: API_ROUTE_CONVERSATION,
     initialMessages: [],
     onFinish: cacheAndAddMessage,
     onError: handleError,

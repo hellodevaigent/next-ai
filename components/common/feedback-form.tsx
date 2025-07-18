@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/toast"
+import { API_ROUTE_FEEDBACK } from "@/lib/routes"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { CaretLeft, SealCheck, Spinner } from "@phosphor-icons/react"
@@ -48,37 +49,36 @@ export function FeedbackForm({ authUserId, onClose }: FeedbackFormProps) {
     if (!feedback.trim()) return
 
     try {
-      const supabase = createClient()
-
-      if (!supabase) {
-        toast({
-          title: "Feedback is not supported in this deployment",
-          status: "info",
-        })
-        return
-      }
-
-      const { error } = await supabase.from("feedback").insert({
-        message: feedback,
-        user_id: authUserId,
+      const response = await fetch(API_ROUTE_FEEDBACK, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: feedback,
+        }),
       })
 
-      if (error) {
+      if (!response.ok) {
+        const errorData = await response.json()
         toast({
-          title: `Error submitting feedback: ${error}`,
+          title: `Error submitting feedback: ${errorData.error}`,
           status: "error",
         })
         setStatus("error")
         return
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1200))
+      const data = await response.json()
 
-      setStatus("success")
+      if (data.success) {
+        await new Promise((resolve) => setTimeout(resolve, 1200))
+        setStatus("success")
 
-      setTimeout(() => {
-        handleClose()
-      }, 2500)
+        setTimeout(() => {
+          handleClose()
+        }, 2500)
+      }
     } catch (error) {
       toast({
         title: `Error submitting feedback: ${error}`,

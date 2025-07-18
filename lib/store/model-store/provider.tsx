@@ -3,6 +3,11 @@
 import { fetchClient } from "@/lib/fetch"
 import { ModelConfig } from "@/lib/models/types"
 import {
+  API_ROUTE_MODELS,
+  API_ROUTE_UP_FAVORITE_MODELS,
+  API_ROUTE_USER_KEYS,
+} from "@/lib/routes"
+import {
   createContext,
   useCallback,
   useContext,
@@ -18,7 +23,7 @@ type UserKeyStatus = {
   perplexity: boolean
   xai: boolean
   anthropic: boolean
-  [key: string]: boolean // Allow for additional providers
+  [key: string]: boolean
 }
 
 type ModelContextType = {
@@ -51,7 +56,7 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
 
   const fetchModels = useCallback(async () => {
     try {
-      const response = await fetchClient("/api/models")
+      const response = await fetchClient(API_ROUTE_MODELS)
       if (response.ok) {
         const data = await response.json()
         setModels(data.models || [])
@@ -63,7 +68,7 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserKeyStatus = useCallback(async () => {
     try {
-      const response = await fetchClient("/api/user-key-status")
+      const response = await fetchClient(API_ROUTE_USER_KEYS)
       if (response.ok) {
         const data = await response.json()
         setUserKeyStatus(data)
@@ -85,9 +90,7 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
 
   const fetchFavoriteModels = useCallback(async () => {
     try {
-      const response = await fetchClient(
-        "/api/user-preferences/favorite-models"
-      )
+      const response = await fetchClient(API_ROUTE_UP_FAVORITE_MODELS)
       if (response.ok) {
         const data = await response.json()
         setFavoriteModels(data.favorite_models || [])

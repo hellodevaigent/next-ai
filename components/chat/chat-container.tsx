@@ -2,13 +2,13 @@
 
 import { ChatInput } from "@/components/chat-input/chat-input"
 import { Conversation } from "@/components/chat/conversation"
+import { MODEL_DEFAULT } from "@/lib/config"
 import { useChatDraft } from "@/lib/hooks/use-chat-draft"
 import { useChatLoading } from "@/lib/hooks/use-chat-loading"
+import { useTitle } from "@/lib/hooks/use-title"
 import { useChats } from "@/lib/store/chat-store/chats/provider"
 import { useMessages } from "@/lib/store/chat-store/messages/provider"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
-import { MODEL_DEFAULT } from "@/lib/config"
-import { useTitle } from "@/lib/hooks/use-title"
 import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { useUser } from "@/lib/store/user-store/provider"
 import { cn } from "@/lib/utils"
@@ -48,7 +48,7 @@ interface ConversationContainerProps {
 // Memoized components
 const OnboardingHeader = memo<OnboardingProps>(({ showOnboarding }) => {
   if (!showOnboarding) return null
-  
+
   return (
     <motion.div
       key="onboarding"
@@ -178,11 +178,11 @@ export function ChatContainer() {
 
   // State to pass between hooks
   const [hasDialogAuth, setHasDialogAuth] = useState(false)
-  
+
   // Memoize computed values
   const isAuthenticated = useMemo(() => !!user?.id, [user?.id])
 
-   const [modelForNewChat, setModelForNewChat] = useState<string>(
+  const [modelForNewChat, setModelForNewChat] = useState<string>(
     () => user?.favorite_models?.[0] || MODEL_DEFAULT
   )
 
@@ -205,7 +205,6 @@ export function ChatContainer() {
     input,
     status,
     stop,
-    reload,
     hasSentFirstMessageRef,
     isSubmitting,
     enableSearch,
@@ -229,7 +228,7 @@ export function ChatContainer() {
     clearDraft,
     bumpChat,
     setHasDialogAuth: setHasDialogAuthCallback,
-    createNewChat
+    createNewChat,
   })
 
   const { shouldShowLoading } = useChatLoading(
@@ -249,7 +248,8 @@ export function ChatContainer() {
       files,
       onFileUpload: handleFileUpload,
       onFileRemove: handleFileRemove,
-      hasSuggestions: preferences.promptSuggestions && !chatId && messages.length === 0,
+      hasSuggestions:
+        preferences.promptSuggestions && !chatId && messages.length === 0,
       onSelectModel: handleModelChange,
       selectedModel,
       isUserAuthenticated: isAuthenticated,

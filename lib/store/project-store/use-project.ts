@@ -7,6 +7,7 @@ import {
 import { STORE_NAMES } from '../persist';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchClient } from '@/lib/fetch';
+import { API_ROUTE_FAVORITE_PROJECT } from '@/lib/routes';
 
 interface SearchHistoryItem {
   id: string;
@@ -18,57 +19,6 @@ type FavoriteProjectsResponse = {
   favorite_projects: string[];
 };
 
-// export function useProjectFavorites() {
-//   const [favorites, setFavorites] = useState<string[]>([])
-//   const [isLoading, setIsLoading] = useState(true)
-
-//   const loadFavorites = useCallback(async () => {
-//     setIsLoading(true)
-//     try {
-//       const favoriteItems = await readFromIndexedDB<FavoriteItem>(STORE_NAMES.PROJECT_FAVORITE)
-      
-//       if (Array.isArray(favoriteItems)) {
-//         setFavorites(favoriteItems.map(item => item.id))
-//       } else if (favoriteItems && typeof favoriteItems === 'object' && 'id' in favoriteItems) {
-//         setFavorites([favoriteItems.id])
-//       } else {
-//         setFavorites([])
-//       }
-//     } catch (error) {
-//       console.error('Failed to load favorites:', error)
-//       setFavorites([])
-//     } finally {
-//       setIsLoading(false)
-//     }
-//   }, [])
-
-//   useEffect(() => {
-//     loadFavorites()
-//   }, [loadFavorites])
-
-//   const toggleFavorite = useCallback(async (projectId: string) => {
-//     try {
-//       const isCurrentlyFavorite = favorites.includes(projectId)
-      
-//       if (isCurrentlyFavorite) {
-//         await deleteFromIndexedDB(STORE_NAMES.PROJECT_FAVORITE, projectId)
-//       } else {
-//         await writeToIndexedDB(STORE_NAMES.PROJECT_FAVORITE, { id: projectId })
-//       }
-//       await loadFavorites() 
-//     } catch (error) {
-//       console.error('Failed to toggle favorite:', error)
-//     }
-//   }, [favorites, loadFavorites])
-
-//   return { 
-//     favorites, 
-//     toggleFavorite, 
-//     isLoading,
-//     refetch: loadFavorites
-//   }
-// }
-
 export function useProjectFavorites() {
   const queryClient = useQueryClient();
 
@@ -76,7 +26,7 @@ export function useProjectFavorites() {
     queryKey: ["favorite-projects"],
     queryFn: async () => {
       const response = await fetchClient(
-        "/api/favorite/projects"
+        API_ROUTE_FAVORITE_PROJECT
       );
       if (!response.ok) {
         throw new Error("Failed to fetch favorite projects");
@@ -90,7 +40,7 @@ export function useProjectFavorites() {
   const updateFavoriteProjectsMutation = useMutation({
     mutationFn: async (favorites: string[]) => {
       const response = await fetchClient(
-        "/api/favorite/projects",
+        API_ROUTE_FAVORITE_PROJECT,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

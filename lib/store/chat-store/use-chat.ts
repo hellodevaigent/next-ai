@@ -7,6 +7,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useState } from "react"
 import { STORE_NAMES } from "../persist"
+import { API_ROUTE_FAVORITE_CHAT } from "@/lib/routes"
 
 type FavoriteChatsResponse = {
   favorite_chats: string[]
@@ -24,7 +25,7 @@ export function useFavoriteChats() {
   const { data: favoriteChats = [], isLoading } = useQuery<string[]>({
     queryKey: ["favorite-chats"],
     queryFn: async () => {
-      const response = await fetchClient("/api/favorite/chats")
+      const response = await fetchClient(API_ROUTE_FAVORITE_CHAT)
       if (!response.ok) {
         throw new Error("Failed to fetch favorite chats")
       }
@@ -36,7 +37,7 @@ export function useFavoriteChats() {
 
   const updateFavoriteChatsMutation = useMutation({
     mutationFn: async (favoriteChats: string[]) => {
-      const response = await fetchClient("/api/favorite/chats", {
+      const response = await fetchClient(API_ROUTE_FAVORITE_CHAT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

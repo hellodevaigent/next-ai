@@ -9,6 +9,7 @@ import {
   type LayoutType,
   type UserPreferences,
 } from "./utils"
+import { API_ROUTE_UP } from "@/lib/routes"
 
 export {
   type LayoutType,
@@ -36,7 +37,7 @@ const UserPreferencesContext = createContext<
 >(undefined)
 
 async function fetchUserPreferences(): Promise<UserPreferences> {
-  const response = await fetch("/api/user-preferences")
+  const response = await fetch(API_ROUTE_UP)
   if (!response.ok) {
     throw new Error("Failed to fetch user preferences")
   }
@@ -47,7 +48,7 @@ async function fetchUserPreferences(): Promise<UserPreferences> {
 async function updateUserPreferences(
   update: Partial<UserPreferences>
 ): Promise<UserPreferences> {
-  const response = await fetch("/api/user-preferences", {
+  const response = await fetch(API_ROUTE_UP, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

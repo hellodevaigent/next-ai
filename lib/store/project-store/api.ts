@@ -5,9 +5,10 @@ import {
 } from "@/lib/store/persist"
 import { fetchClient } from "@/lib/fetch"
 import type { Project } from "./types"
+import { API_ROUTE_PROJECTS } from "@/lib/routes"
 
 async function fetchProjectsFromApi(): Promise<Project[]> {
-  const response = await fetchClient("/api/projects")
+  const response = await fetchClient(API_ROUTE_PROJECTS)
   if (!response.ok) {
     throw new Error("Failed to fetch projects from API")
   }
@@ -15,7 +16,7 @@ async function fetchProjectsFromApi(): Promise<Project[]> {
 }
 
 async function createProjectInApi(name: string): Promise<Project> {
-  const response = await fetchClient("/api/projects", {
+  const response = await fetchClient(API_ROUTE_PROJECTS, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name }),
@@ -28,7 +29,7 @@ async function createProjectInApi(name: string): Promise<Project> {
 }
 
 async function updateProjectInApi(id: string, name: string): Promise<Project> {
-  const response = await fetchClient(`/api/projects/${id}`, {
+  const response = await fetchClient(`${API_ROUTE_PROJECTS}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name }),
@@ -41,7 +42,7 @@ async function updateProjectInApi(id: string, name: string): Promise<Project> {
 }
 
 async function deleteProjectFromApi(id: string): Promise<void> {
-  const response = await fetchClient(`/api/projects/${id}`, {
+  const response = await fetchClient(`${API_ROUTE_PROJECTS}/${id}`, {
     method: "DELETE",
   })
   if (!response.ok) {

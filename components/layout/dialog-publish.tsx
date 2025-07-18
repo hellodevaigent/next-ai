@@ -24,7 +24,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { APP_DOMAIN } from "@/lib/config"
+import { fetchClient } from "@/lib/fetch"
 import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
+import { API_ROUTE_CONVERSATION } from "@/lib/routes"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
 import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
@@ -65,26 +67,30 @@ export function DialogPublish() {
   const handlePublish = async () => {
     setIsLoading(true)
 
-    const supabase = createClient()
+    try {
+      const response = await fetchClient(`${API_ROUTE_CONVERSATION}/${chatId}/publish`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
 
-    if (!supabase) {
-      throw new Error("Supabase is not configured")
-    }
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Failed to publish chat:', errorData.error)
+        return
+      }
 
-    const { data, error } = await supabase
-      .from("chats")
-      .update({ public: true })
-      .eq("id", chatId)
-      .select()
-      .single()
-
-    if (error) {
-      console.error(error)
-    }
-
-    if (data) {
+      const data = await response.json()
+      
+      if (data.success) {
+        setIsLoading(false)
+        setOpenDialog(true)
+      }
+    } catch (error) {
+      console.error('Error publishing chat:', error)
+    } finally {
       setIsLoading(false)
-      setOpenDialog(true)
     }
   }
 

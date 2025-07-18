@@ -1,87 +1,69 @@
-import { readFromIndexedDB, writeToIndexedDB } from "@/lib/store/persist"
 import type { Chat, Chats } from "@/lib/store/chat-store/types"
-import { createClient } from "@/lib/supabase/client"
+import { readFromIndexedDB, writeToIndexedDB } from "@/lib/store/persist"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { MODEL_DEFAULT } from "../../../config"
 import { fetchClient } from "../../../fetch"
-import { API_ROUTE_UPDATE_CHAT_MODEL } from "../../../routes"
+import { API_ROUTE_CHATS, API_ROUTE_UPDATE_CHAT_MODEL, API_ROUTE_CREATE_CHAT } from "../../../routes"
 
-export async function getChatsForUserInDb(userId: string): Promise<Chats[]> {
-  const supabase = createClient()
-  if (!supabase) return []
-
-  const { data, error } = await supabase
-    .from("chats")
-    .select("*")
-    .eq("user_id", userId)
-    .order("updated_at", { ascending: false })
-
-  if (!data || error) {
-    console.error("Failed to fetch chats:", error)
-    return []
-  }
+export async function getChatsForUserInDb(): Promise<Chats[]> {
+  const response = await fetchClient(API_ROUTE_CHATS)
+  const data = await response.json()
 
   return data
 }
 
 export async function updateChatTitleInDb(id: string, title: string) {
-  const supabase = createClient()
-  if (!supabase) return
+  const response = await fetchClient(API_ROUTE_CHATS, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, title }),
+  })
 
-  const { error } = await supabase
-    .from("chats")
-    .update({ title, updated_at: new Date().toISOString() })
-    .eq("id", id)
-  if (error) throw error
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || "Failed to update chat")
+  }
 }
 
 export async function deleteChatInDb(id: string) {
-  const supabase = createClient()
-  if (!supabase) return
+  const response = await fetchClient(API_ROUTE_CHATS, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  })
 
-  const { error } = await supabase.from("chats").delete().eq("id", id)
-  if (error) throw error
-}
-
-export async function getAllUserChatsInDb(userId: string): Promise<Chats[]> {
-  const supabase = createClient()
-  if (!supabase) return []
-
-  const { data, error } = await supabase
-    .from("chats")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-
-  if (!data || error) return []
-  return data
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || "Failed to delete chat")
+  }
 }
 
 export async function createChatInDb(
-  userId: string,
   title: string,
   model: string,
   systemPrompt: string
 ): Promise<string | null> {
-  const supabase = createClient()
-  if (!supabase) return null
+  const response = await fetchClient(API_ROUTE_CHATS, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, model, systemPrompt }),
+  })
 
-  const { data, error } = await supabase
-    .from("chats")
-    .insert({ user_id: userId, title, model, system_prompt: systemPrompt })
-    .select("id")
-    .single()
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || "Failed to create chat")
+  }
 
-  if (error || !data?.id) return null
+  const data = await response.json()
   return data.id
 }
 
-export async function fetchAndCacheChats(userId: string): Promise<Chats[]> {
+export async function fetchAndCacheChats(): Promise<Chats[]> {
   if (!isSupabaseEnabled) {
     return await getCachedChats()
   }
 
-  const data = await getChatsForUserInDb(userId)
+  const data = await getChatsForUserInDb()
 
   if (data.length > 0) {
     await writeToIndexedDB("chats", data)
@@ -123,20 +105,13 @@ export async function getChat(chatId: string): Promise<Chat | null> {
   return (all as Chat[]).find((c) => c.id === chatId) || null
 }
 
-export async function getUserChats(userId: string): Promise<Chat[]> {
-  const data = await getAllUserChatsInDb(userId)
-  if (!data) return []
-  await writeToIndexedDB("chats", data)
-  return data
-}
-
 export async function createChat(
   userId: string,
   title: string,
   model: string,
   systemPrompt: string
 ): Promise<string> {
-  const id = await createChatInDb(userId, title, model, systemPrompt)
+  const id = await createChatInDb(title, model, systemPrompt)
   const finalId = id ?? crypto.randomUUID()
 
   await writeToIndexedDB("chats", {
@@ -205,7 +180,7 @@ export async function createNewChat(
       payload.projectId = projectId
     }
 
-    const res = await fetchClient("/api/create-chat", {
+    const res = await fetchClient(API_ROUTE_CREATE_CHAT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

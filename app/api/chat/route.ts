@@ -1,135 +1,176 @@
-import { SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
-import { getAllModels } from "@/lib/models"
-import { getProviderForModel } from "@/lib/openproviders/provider-map"
-import type { ProviderWithoutOllama } from "@/lib/user-keys"
-import { Attachment } from "@ai-sdk/ui-utils"
-import { Message as MessageAISDK, streamText, ToolSet } from "ai"
-import {
-  incrementMessageCount,
-  logUserMessage,
-  storeAssistantMessage,
-  validateAndTrackUsage,
-} from "./api"
-import { createErrorResponse, extractErrorMessage } from "./utils"
-import { toolFunctions } from "@/lib/tools"
+import { createClient } from "@/lib/supabase/server"
+import { NextResponse } from "next/server"
 
-export const maxDuration = 60
-
-type ChatRequest = {
-  messages: MessageAISDK[]
-  chatId: string
-  userId: string
-  model: string
-  isAuthenticated: boolean
-  systemPrompt: string
-  enableSearch: boolean
-  message_group_id?: string
-}
-
-export async function POST(req: Request) {
+export async function GET() {
   try {
-    const {
-      messages,
-      chatId,
-      userId,
-      model,
-      isAuthenticated,
-      systemPrompt,
-      enableSearch,
-      message_group_id,
-    } = (await req.json()) as ChatRequest
+    const supabase = await createClient()
 
-    if (!messages || !chatId || !userId) {
+    if (!supabase) {
       return new Response(
-        JSON.stringify({ error: "Error, missing information" }),
-        { status: 400 }
+        JSON.stringify({ error: "Supabase not available in this deployment." }),
+        { status: 200 }
       )
     }
 
-    const supabase = await validateAndTrackUsage({
-      userId,
-      model,
-      isAuthenticated,
-    })
+    const { data: authData } = await supabase.auth.getUser()
 
-    // Increment message count for successful validation
-    if (supabase) {
-      await incrementMessageCount({ supabase, userId })
+    if (!authData?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const userMessage = messages[messages.length - 1]
+    const { data, error } = await supabase
+      .from("chats")
+      .select("*")
+      .eq("user_id", authData.user.id)
+      .order("updated_at", { ascending: false })
 
-    if (supabase && userMessage?.role === "user") {
-      await logUserMessage({
-        supabase,
-        userId,
-        chatId,
-        content: userMessage.content,
-        attachments: userMessage.experimental_attachments as Attachment[],
-        model,
-        isAuthenticated,
-        message_group_id,
+    if (!data || error) {
+      console.error("Failed to fetch conversation:", error)
+      return NextResponse.json(
+        { error: "Failed to fetch conversation" },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json(data)
+  } catch (error) {
+    console.error("Error fetching conversation:", error)
+    return NextResponse.json(
+      { error: "Failed to fetch conversation" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const supabase = await createClient()
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Supabase not available in this deployment." },
+        { status: 200 }
+      )
+    }
+
+    const { data: authData } = await supabase.auth.getUser()
+    
+    if (!authData?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { title, model, systemPrompt } = await request.json()
+
+    const { data, error } = await supabase
+      .from("chats")
+      .insert({ 
+        user_id: authData.user.id, 
+        title, 
+        model, 
+        system_prompt: systemPrompt 
       })
+      .select("id")
+      .single()
+
+    if (error || !data?.id) {
+      console.error("Failed to create chat:", error)
+      return NextResponse.json(
+        { error: "Failed to create chat" },
+        { status: 500 }
+      )
     }
 
-    const allModels = await getAllModels()
-    const modelConfig = allModels.find((m) => m.id === model)
+    return NextResponse.json({ id: data.id })
+  } catch (error) {
+    console.error("Error creating chat:", error)
+    return NextResponse.json(
+      { error: "Failed to create chat" },
+      { status: 500 }
+    )
+  }
+}
 
-    if (!modelConfig || !modelConfig.apiSdk) {
-      throw new Error(`Model ${model} not found`)
+export async function PATCH(request: Request) {
+  try {
+    const supabase = await createClient()
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Supabase not available in this deployment." },
+        { status: 200 }
+      )
     }
 
-    const effectiveSystemPrompt = systemPrompt || SYSTEM_PROMPT_DEFAULT
-
-    let apiKey: string | undefined
-    if (isAuthenticated && userId) {
-      const { getEffectiveApiKey } = await import("@/lib/user-keys")
-      const provider = getProviderForModel(model)
-      apiKey =
-        (await getEffectiveApiKey(userId, provider as ProviderWithoutOllama)) ||
-        undefined
+    const { data: authData } = await supabase.auth.getUser()
+    
+    if (!authData?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const result = streamText({
-      model: modelConfig.apiSdk(apiKey, { enableSearch }),
-      system: effectiveSystemPrompt,
-      messages: messages,
-      tools: toolFunctions as ToolSet,
-      maxSteps: 10,
-      onError: (err: unknown) => {
-        console.error("Streaming error occurred:", err)
-        // Don't set streamError anymore - let the AI SDK handle it through the stream
-      },
+    const { id, title } = await request.json()
 
-      onFinish: async ({ response }) => {
-        if (supabase) {
-          await storeAssistantMessage({
-            supabase,
-            chatId,
-            messages: response.messages as unknown as import("@/types/api.types").Message[],
-            message_group_id,
-            model,
-          })
-        }
-      },
-    })
+    const { error } = await supabase
+      .from("chats")
+      .update({ title, updated_at: new Date().toISOString() })
+      .eq("id", id)
 
-    return result.toDataStreamResponse({
-      sendReasoning: true,
-      sendSources: true,
-      getErrorMessage: (error: unknown) => {
-        console.error("Error forwarded to client:", error)
-        return extractErrorMessage(error)
-      },
-    })
-  } catch (err: unknown) {
-    console.error("Error in /api/chat:", err)
-    const error = err as {
-      code?: string
-      message?: string
-      statusCode?: number
+    if (error) {
+      console.error("Failed to update chat:", error)
+      return NextResponse.json(
+        { error: "Failed to update chat" },
+        { status: 500 }
+      )
     }
 
-    return createErrorResponse(error)
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error updating chat:", error)
+    return NextResponse.json(
+      { error: "Failed to update chat" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient()
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Supabase not available in this deployment." },
+        { status: 200 }
+      )
+    }
+
+    const { data: authData } = await supabase.auth.getUser()
+    
+    if (!authData?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { id } = await request.json()
+
+    const { error } = await supabase
+      .from("chats")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", authData.user.id) // Security: ensure user owns the chat
+
+    if (error) {
+      console.error("Failed to delete chat:", error)
+      return NextResponse.json(
+        { error: "Failed to delete chat" },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting chat:", error)
+    return NextResponse.json(
+      { error: "Failed to delete chat" },
+      { status: 500 }
+    )
   }
 }

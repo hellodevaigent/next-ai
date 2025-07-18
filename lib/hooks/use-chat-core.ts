@@ -9,7 +9,7 @@ import { useChat } from "@ai-sdk/react"
 import { useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Chats } from "../store/chat-store/types"
-import { API_ROUTE_CHAT } from "../routes"
+import { API_ROUTE_CONVERSATION } from "../routes"
 
 type UseChatCoreProps = {
   initialMessages: Message[]
@@ -103,7 +103,7 @@ export function useChatCore({
     setInput,
     append,
   } = useChat({
-    api: API_ROUTE_CHAT,
+    api: API_ROUTE_CONVERSATION,
     initialMessages,
     initialInput: draftValue,
     onFinish: cacheAndAddMessage,

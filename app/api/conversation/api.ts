@@ -1,4 +1,4 @@
-import { saveFinalAssistantMessage } from "@/app/api/chat/db"
+
 import type {
   ChatApiParams,
   LogUserMessageParams,
@@ -11,6 +11,7 @@ import { sanitizeUserInput } from "@/lib/sanitize"
 import { validateUserIdentity } from "@/lib/server/api"
 import { checkUsageByModel, incrementUsage } from "@/lib/usage"
 import { getUserKey, type ProviderWithoutOllama } from "@/lib/user-keys"
+import { saveFinalAssistantMessage } from "./db"
 
 export async function validateAndTrackUsage({
   userId,
