@@ -1,8 +1,8 @@
+import { fetchClient } from "@/lib/fetch"
+import { API_ROUTE_CONVERSATION } from "@/lib/routes"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import type { Message as MessageAISDK } from "ai"
 import { readFromIndexedDB, writeToIndexedDB } from "../../persist"
-import { fetchClient } from "@/lib/fetch"
-import { API_ROUTE_CONVERSATION } from "@/lib/routes"
 
 type ChatMessageEntry = {
   id: string
@@ -24,7 +24,9 @@ export async function getMessagesFromDb(
     throw new Error("Failed to fetch messages")
   }
 
-  return await response.json()
+  const data = await response.json()
+
+  return data
 }
 
 async function insertMessageToDb(chatId: string, message: MessageAISDK) {
@@ -72,14 +74,17 @@ async function deleteMessagesFromDb(chatId: string) {
 }
 
 export async function deleteMessagesFromDbByMessageId(
-  chatId: string, 
-  messageId: string,
+  chatId: string,
+  messageId: string
 ) {
   if (!isSupabaseEnabled) return
 
-  const response = await fetchClient(`${API_ROUTE_CONVERSATION}/${chatId}?messageId=${messageId}`, {
-    method: "DELETE",
-  })
+  const response = await fetchClient(
+    `${API_ROUTE_CONVERSATION}/${chatId}?messageId=${messageId}`,
+    {
+      method: "DELETE",
+    }
+  )
 
   if (!response.ok) {
     throw new Error("Failed to delete messages from anchor")

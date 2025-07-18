@@ -15,7 +15,7 @@ export const API_ROUTE_MODELS = "/api/models"
 export const API_ROUTE_UP = "/api/user-preferences"
 
 export const API_ROUTE_SIGN_OUT = "/api/auth/signout"
-export const API_ROUTE_USERS = "/api/users"
+export const API_ROUTE_USERS = "/api/user"
 export const API_ROUTE_USER_KEYS = "/api/user-key-status"
 export const API_ROUTE_WALLET_ICONS = "/api/wallet-icon"
 

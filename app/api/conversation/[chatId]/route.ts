@@ -34,7 +34,6 @@ export async function GET(
         "id, content, role, experimental_attachments, created_at, parts, message_group_id, model"
       )
       .eq("chat_id", chatId)
-      .eq("user_id", authData.user.id)
       .order("created_at", { ascending: true })
 
     if (!data || error) {
