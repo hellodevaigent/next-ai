@@ -1,14 +1,15 @@
 import { useChatDraft } from "@/lib/hooks/use-chat-draft"
 import { toast } from "@/components/ui/toast"
-import { getOrCreateGuestUserId } from "@/lib/api"
-import { MESSAGE_MAX_LENGTH, SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
+import { checkRateLimits, getOrCreateGuestUserId } from "@/lib/api"
+import { MESSAGE_MAX_LENGTH, REMAINING_QUERY_ALERT_THRESHOLD, SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
 import { Attachment } from "@/lib/file-handling"
-import { API_ROUTE_CHAT } from "@/lib/routes"
 import type { UserProfile } from "@/lib/user/types"
 import type { Message } from "@ai-sdk/react"
 import { useChat } from "@ai-sdk/react"
 import { useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Chats } from "../store/chat-store/types"
+import { API_ROUTE_CHAT } from "../routes"
 
 type UseChatCoreProps = {
   initialMessages: Message[]
@@ -21,16 +22,22 @@ type UseChatCoreProps = {
     files: File[]
   ) => Array<{ name: string; contentType: string; url: string }>
   setFiles: (files: File[]) => void
-  checkLimitsAndNotify: (uid: string) => Promise<boolean>
   cleanupOptimisticAttachments: (attachments?: Array<{ url?: string }>) => void
-  ensureChatExists: (uid: string, input: string) => Promise<string | null>
   handleFileUploads: (
     uid: string,
     chatId: string
   ) => Promise<Attachment[] | null>
+  createNewChat: (
+    userId: string,
+    title?: string,
+    model?: string,
+    isAuthenticated?: boolean,
+    systemPrompt?: string
+  ) => Promise<Chats | undefined>
   selectedModel: string
   clearDraft: () => void
   bumpChat: (chatId: string) => void
+  setHasDialogAuth: (value: boolean) => void
 }
 
 export function useChatCore({
@@ -42,17 +49,16 @@ export function useChatCore({
   files,
   createOptimisticAttachments,
   setFiles,
-  checkLimitsAndNotify,
   cleanupOptimisticAttachments,
-  ensureChatExists,
   handleFileUploads,
   selectedModel,
   clearDraft,
   bumpChat,
+  setHasDialogAuth,
+  createNewChat
 }: UseChatCoreProps) {
   // State management
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [hasDialogAuth, setHasDialogAuth] = useState(false)
   const [enableSearch, setEnableSearch] = useState(false)
 
   // Refs and derived state
@@ -103,6 +109,88 @@ export function useChatCore({
     onFinish: cacheAndAddMessage,
     onError: handleError,
   })
+
+  // Chat utilities
+  const checkLimitsAndNotify = async (uid: string): Promise<boolean> => {
+    try {
+      const rateData = await checkRateLimits(uid, isAuthenticated)
+
+      if (rateData.remaining === 0 && !isAuthenticated) {
+        setHasDialogAuth(true)
+        return false
+      }
+
+      if (rateData.remaining === REMAINING_QUERY_ALERT_THRESHOLD) {
+        toast({
+          title: `Only ${rateData.remaining} quer${
+            rateData.remaining === 1 ? "y" : "ies"
+          } remaining today.`,
+          status: "info",
+        })
+      }
+
+      if (rateData.remainingPro === REMAINING_QUERY_ALERT_THRESHOLD) {
+        toast({
+          title: `Only ${rateData.remainingPro} pro quer${
+            rateData.remainingPro === 1 ? "y" : "ies"
+          } remaining today.`,
+          status: "info",
+        })
+      }
+
+      return true
+    } catch (err) {
+      console.error("Rate limit check failed:", err)
+      return false
+    }
+  }
+
+  const ensureChatExists = async (userId: string, input: string) => {
+    if (!isAuthenticated) {
+      const storedGuestChatId = localStorage.getItem("guestChatId")
+      if (storedGuestChatId) return storedGuestChatId
+    }
+
+    if (messages.length === 0) {
+      try {
+        const newChat = await createNewChat(
+          userId,
+          input,
+          selectedModel,
+          isAuthenticated,
+          systemPrompt
+        )
+
+        if (!newChat) return null
+        if (isAuthenticated) {
+          window.history.pushState(null, "", `/c/${newChat.id}`)
+        } else {
+          localStorage.setItem("guestChatId", newChat.id)
+        }
+
+        return newChat.id
+      } catch (err: unknown) {
+        let errorMessage = "Something went wrong."
+        try {
+          const errorObj = err as { message?: string }
+          if (errorObj.message) {
+            const parsed = JSON.parse(errorObj.message)
+            errorMessage = parsed.error || errorMessage
+          }
+        } catch {
+          const errorObj = err as { message?: string }
+          errorMessage = errorObj.message || errorMessage
+        }
+        toast({
+          title: errorMessage,
+          status: "error",
+        })
+        return null
+      }
+    }
+
+    return chatId
+  }
 
   // Handle search params on mount
   useEffect(() => {
@@ -362,7 +450,6 @@ export function useChatCore({
     // Component state
     isSubmitting,
     setIsSubmitting,
-    hasDialogAuth,
     setHasDialogAuth,
     enableSearch,
     setEnableSearch,

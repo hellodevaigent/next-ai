@@ -10,7 +10,6 @@ import { useChats } from "@/lib/store/chat-store/chats/provider"
 import { useMessages } from "@/lib/store/chat-store/messages/provider"
 import { MESSAGE_MAX_LENGTH, SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
 import { Attachment } from "@/lib/file-handling"
-import { useChatOperations } from "@/lib/hooks/use-chat-operations"
 import { useFileUpload } from "@/lib/hooks/use-file-upload"
 import { useModel } from "@/lib/hooks/use-model"
 import { useTitle } from "@/lib/hooks/use-title"
@@ -311,7 +310,7 @@ export function ProjectView({ projectId }: ProjectViewProps) {
       messages,
       status,
       onDelete: () => {},
-      onEdit: () => {},
+      onEdit: async () => {},
       onReload: handleReload,
     }),
     [messages, status, handleReload]

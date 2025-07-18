@@ -31,7 +31,7 @@ export type MessageUserProps = {
   copied: boolean
   isLast?: boolean
   copyToClipboard: () => void
-  onEdit: (id: string, newText: string) => void
+  onEdit: (id: string, newText: string) => Promise<void>
   onReload: () => void
   onDelete: (id: string) => void
   id: string
@@ -71,12 +71,16 @@ export function MessageUser({
     setEditInput(children)
   }
 
-  const handleSave = () => {
-    if (onEdit) {
-      onEdit(id, editInput)
-    }
-    onReload()
+  const handleSave = async () => {
+    if (!onEdit || !id) return
+
     setIsEditing(false)
+
+    try {
+      await onEdit(id, editInput)
+    } catch (error) {
+      console.error('Failed to save message:', error)
+    }
   }
 
   const toggleActions = (e: React.MouseEvent) => {
@@ -232,7 +236,7 @@ export function MessageUser({
               >
                 {copied ? "copied" : "Copy"}
               </button>
-              {/* {isLast && (
+              {isLast && (
                 <button
                   onClick={() => setIsEditing(true)}
                   className="text-background-primary flex flex-row items-center gap-1.5 rounded-md p-1.5 py-0.5 text-xs transition select-auto active:scale-95"
@@ -240,7 +244,7 @@ export function MessageUser({
                 >
                   Edit
                 </button>
-              )} */}
+              )}
             </div>
           </div>
         </div>

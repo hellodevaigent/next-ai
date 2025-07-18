@@ -7,7 +7,7 @@ import { useChatLoading } from "@/lib/hooks/use-chat-loading"
 import { useChats } from "@/lib/store/chat-store/chats/provider"
 import { useMessages } from "@/lib/store/chat-store/messages/provider"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
-import { MODEL_DEFAULT, SYSTEM_PROMPT_DEFAULT } from "@/lib/config"
+import { MODEL_DEFAULT } from "@/lib/config"
 import { useTitle } from "@/lib/hooks/use-title"
 import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { useUser } from "@/lib/store/user-store/provider"
@@ -16,7 +16,6 @@ import { AnimatePresence, motion } from "motion/react"
 import { redirect } from "next/navigation"
 import { lazy, memo, Suspense, useCallback, useMemo, useState } from "react"
 import { useChatCore } from "../../lib/hooks/use-chat-core"
-import { useChatOperations } from "../../lib/hooks/use-chat-operations"
 import { useFileUpload } from "../../lib/hooks/use-file-upload"
 import { ConversationSkeleton } from "../skeleton/conversation"
 import { toast } from "../ui/toast"
@@ -182,10 +181,6 @@ export function ChatContainer() {
   
   // Memoize computed values
   const isAuthenticated = useMemo(() => !!user?.id, [user?.id])
-  const systemPrompt = useMemo(
-    () => user?.system_prompt || SYSTEM_PROMPT_DEFAULT,
-    [user?.system_prompt]
-  )
 
    const [modelForNewChat, setModelForNewChat] = useState<string>(
     () => user?.favorite_models?.[0] || MODEL_DEFAULT
@@ -204,24 +199,13 @@ export function ChatContainer() {
     []
   )
 
-  // Chat operations (utils + handlers) - created first
-  const { checkLimitsAndNotify, ensureChatExists } =
-    useChatOperations({
-      isAuthenticated,
-      chatId,
-      messages: initialMessages,
-      selectedModel,
-      systemPrompt,
-      createNewChat,
-      setHasDialogAuth: setHasDialogAuthCallback,
-    })
-
   // Core chat functionality (initialization + state + actions)
   const {
     messages,
     input,
     status,
     stop,
+    reload,
     hasSentFirstMessageRef,
     isSubmitting,
     enableSearch,
@@ -239,13 +223,13 @@ export function ChatContainer() {
     files,
     createOptimisticAttachments,
     setFiles,
-    checkLimitsAndNotify,
     cleanupOptimisticAttachments,
-    ensureChatExists,
     handleFileUploads,
     selectedModel,
     clearDraft,
     bumpChat,
+    setHasDialogAuth: setHasDialogAuthCallback,
+    createNewChat
   })
 
   const { shouldShowLoading } = useChatLoading(
@@ -303,7 +287,7 @@ export function ChatContainer() {
       status,
       isSubmitting,
       onDelete: () => {},
-      onEdit: () => {},
+      onEdit: async () => {},
       onReload: handleReload,
     }),
     [messages, status, handleReload]

@@ -12,7 +12,7 @@ type ConversationProps = {
   messages: MessageType[]
   status?: "streaming" | "ready" | "submitted" | "error"
   onDelete: (id: string) => void
-  onEdit: (id: string, newText: string) => void
+  onEdit: (id: string, newText: string) => Promise<void>
   onReload: () => void
   isSubmitting?: boolean
 }
