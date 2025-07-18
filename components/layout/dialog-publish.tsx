@@ -28,7 +28,6 @@ import { fetchClient } from "@/lib/fetch"
 import { useBreakpoint } from "@/lib/hooks/use-breakpoint"
 import { API_ROUTE_CONVERSATION } from "@/lib/routes"
 import { useChatSession } from "@/lib/store/chat-store/session/provider"
-import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { Check, Copy, Globe, Spinner } from "@phosphor-icons/react"
 import type React from "react"
@@ -68,7 +67,7 @@ export function DialogPublish() {
     setIsLoading(true)
 
     try {
-      const response = await fetchClient(`${API_ROUTE_CONVERSATION}/${chatId}/publish`, {
+      const response = await fetchClient(`${API_ROUTE_CONVERSATION}/${chatId}/share`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

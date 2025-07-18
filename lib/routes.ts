@@ -20,3 +20,4 @@ export const API_ROUTE_USER_KEYS = "/api/user-key-status"
 export const API_ROUTE_WALLET_ICONS = "/api/wallet-icon"
 
 export const API_ROUTE_RATE_LIMIT = "/api/rate-limits"
+export const API_ROUTE_SHARE = "/api/share"
