@@ -2,7 +2,7 @@ import { APP_DOMAIN } from "@/lib/config"
 import type { UserProfile } from "@/lib/user/types"
 import { SupabaseClient } from "@supabase/supabase-js"
 import { fetchClient } from "./fetch"
-import { API_ROUTE_CREATE_GUEST, API_ROUTE_UPDATE_CHAT_MODEL } from "./routes"
+import { API_ROUTE_CREATE_GUEST, API_ROUTE_RATE_LIMIT, API_ROUTE_UPDATE_CHAT_MODEL } from "./routes"
 import { createClient } from "./supabase/client"
 
 /**
@@ -53,7 +53,7 @@ export async function checkRateLimits(
 ) {
   try {
     const res = await fetchClient(
-      `/api/rate-limits?userId=${userId}&isAuthenticated=${isAuthenticated}`,
+      `${API_ROUTE_RATE_LIMIT}?userId=${userId}&isAuthenticated=${isAuthenticated}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },

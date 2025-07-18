@@ -11,8 +11,12 @@ export const API_ROUTE_CONVERSATION = "/api/conversation"
 export const API_ROUTE_PROJECTS = "/api/projects"
 export const API_ROUTE_FAVORITE_PROJECT = "/api/favorite-project"
 
-export const API_ROUTE_UP = "/api/user-preferences"
 export const API_ROUTE_MODELS = "/api/models"
-export const API_ROUTE_UP_FAVORITE_MODELS = "/api/user-preferences/favorite-models"
+export const API_ROUTE_UP = "/api/user-preferences"
 
+export const API_ROUTE_SIGN_OUT = "/api/auth/signout"
+export const API_ROUTE_USERS = "/api/users"
 export const API_ROUTE_USER_KEYS = "/api/user-key-status"
+export const API_ROUTE_WALLET_ICONS = "/api/wallet-icon"
+
+export const API_ROUTE_RATE_LIMIT = "/api/rate-limits"

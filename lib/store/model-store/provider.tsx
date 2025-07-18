@@ -4,7 +4,7 @@ import { fetchClient } from "@/lib/fetch"
 import { ModelConfig } from "@/lib/models/types"
 import {
   API_ROUTE_MODELS,
-  API_ROUTE_UP_FAVORITE_MODELS,
+  API_ROUTE_UP,
   API_ROUTE_USER_KEYS,
 } from "@/lib/routes"
 import {
@@ -90,7 +90,7 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
 
   const fetchFavoriteModels = useCallback(async () => {
     try {
-      const response = await fetchClient(API_ROUTE_UP_FAVORITE_MODELS)
+      const response = await fetchClient(`${API_ROUTE_UP}/favorite-models`)
       if (response.ok) {
         const data = await response.json()
         setFavoriteModels(data.favorite_models || [])

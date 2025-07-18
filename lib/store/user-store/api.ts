@@ -1,12 +1,13 @@
 import { toast } from "@/components/ui/toast"
 import { fetchClient } from "@/lib/fetch"
+import { API_ROUTE_SIGN_OUT, API_ROUTE_USERS } from "@/lib/routes"
 import { createClient } from "@/lib/supabase/client"
 import type { UserProfile } from "@/lib/user/types"
 
 export async function fetchUserProfile(): Promise<UserProfile | null> {
-  try {
-    const response = await fetchClient("/api/users")
+  const response = await fetchClient(API_ROUTE_USERS)
 
+  try {
     if (!response.ok) {
       const error = await response.json()
       console.error("Failed to fetch user profile:", error)
@@ -25,7 +26,7 @@ export async function updateUserProfile(
   updates: Partial<UserProfile>
 ): Promise<boolean> {
   try {
-    const response = await fetchClient("/api/users", {
+    const response = await fetchClient(API_ROUTE_USERS, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
@@ -46,7 +47,7 @@ export async function updateUserProfile(
 
 export async function signOutUser(): Promise<boolean> {
   try {
-    const response = await fetchClient("/api/auth/signout", {
+    const response = await fetchClient(API_ROUTE_SIGN_OUT, {
       method: "POST",
     })
 

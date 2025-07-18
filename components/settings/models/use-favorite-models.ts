@@ -1,5 +1,6 @@
 import { toast } from "@/components/ui/toast"
 import { fetchClient } from "@/lib/fetch"
+import { API_ROUTE_UP } from "@/lib/routes"
 import { useModel } from "@/lib/store/model-store/provider"
 import { useUser } from "@/lib/store/user-store/provider"
 import { debounce } from "@/lib/utils"
@@ -30,7 +31,7 @@ export function useFavoriteModels() {
     queryKey: ["favorite-models"],
     queryFn: async () => {
       const response = await fetchClient(
-        "/api/user-preferences/favorite-models"
+        `${API_ROUTE_UP}/favorite-models`
       )
 
       if (!response.ok) {
@@ -49,7 +50,7 @@ export function useFavoriteModels() {
   const updateFavoriteModelsMutation = useMutation({
     mutationFn: async (favoriteModels: string[]) => {
       const response = await fetchClient(
-        "/api/user-preferences/favorite-models",
+        `${API_ROUTE_UP}/favorite-models`,
         {
           method: "POST",
           headers: {

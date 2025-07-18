@@ -1,8 +1,8 @@
 import { toast } from "@/components/ui/toast"
-import { DAILY_FILE_UPLOAD_LIMIT } from "./config"
 import { UPLOAD_CONFIGS } from "./r2/configs"
 import { r2UploadService } from "./r2/upload-service"
 import { API_ROUTE_ATTACHMENTS } from "./routes"
+import { fetchClient } from "./fetch"
 
 export type Attachment = {
   name: string
@@ -62,87 +62,6 @@ export async function deleteFilesFromR2(
   }
 }
 
-/**
- * Delete attachments by chat ID
- */
-export async function deleteChatAttachments(chatId: string): Promise<boolean> {
-  try {
-    const response = await fetch(`/api/attachments/chat/${chatId}`, {
-      method: "DELETE",
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('Error deleting chat attachments:', errorData.error)
-      return false
-    }
-
-    const result = await response.json()    
-    return result.success
-  } catch (error) {
-    console.error('Error deleting chat attachments:', error)
-    return false
-  }
-}
-
-/**
- * Delete attachments by user ID (for user deletion)
- */
-export async function deleteUserAttachments(userId: string): Promise<boolean> {
-  try {
-    const response = await fetch(`/api/attachments/user/${userId}`, {
-      method: "DELETE",
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('Error deleting user attachments:', errorData.error)
-      return false
-    }
-
-    const result = await response.json()
-    
-    return result.success
-  } catch (error) {
-    console.error('Error deleting user attachments:', error)
-    return false
-  }
-}
-
-/**
- * Delete a single attachment
- */
-export async function deleteAttachment(
-  attachmentId: string, 
-  fileUrl: string, 
-  uploadType: UploadType = 'CHAT_ATTACHMENTS'
-): Promise<boolean> {
-  try {
-    const response = await fetch(`/api/attachments/${attachmentId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fileUrl,
-        uploadType,
-      }),
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('Error deleting attachment:', errorData.error)
-      return false
-    }
-
-    const result = await response.json()
-    return result.success
-  } catch (error) {
-    console.error('Error deleting attachment:', error)
-    return false
-  }
-}
-
 export function createAttachment(file: File, url: string): Attachment {
   return {
     name: file.name,
@@ -165,7 +84,7 @@ export async function processFiles(
       const url = await uploadToR2(file, uploadType)
 
       // Save metadata to database via API
-      const response = await fetch("/api/attachments/metadata", {
+      const response = await fetchClient(`${API_ROUTE_ATTACHMENTS}/metadata`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -211,7 +130,7 @@ export class FileUploadLimitError extends Error {
 
 export async function checkFileUploadLimit(userId: string) {
   try {
-    const response = await fetch(`/api/attachments/check-limit/${userId}`, {
+    const response = await fetchClient(`${API_ROUTE_ATTACHMENTS}/check-limit/${userId}`, {
       method: "GET",
     })
 

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchClient } from "../fetch";
 import { get, set } from "idb-keyval";
+import { API_ROUTE_WALLET_ICONS } from "../routes";
 
 export const useWalletIcon = (walletIconId: string | null) => {
   return useQuery({
@@ -15,7 +16,7 @@ export const useWalletIcon = (walletIconId: string | null) => {
         return cachedIcon;
       }
 
-      const response = await fetchClient(`/api/wallet-icon?id=${encodeURIComponent(walletIconId)}`);
+      const response = await fetchClient(`${API_ROUTE_WALLET_ICONS}?id=${encodeURIComponent(walletIconId)}`);
 
       console.log(response)
       
