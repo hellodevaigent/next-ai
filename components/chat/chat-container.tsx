@@ -181,6 +181,7 @@ export function ChatContainer() {
 
   // State to pass between hooks
   const [hasDialogAuth, setHasDialogAuth] = useState(false)
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false)
 
   // Memoize computed values
   const isAuthenticated = useMemo(() => !!user?.id, [user?.id])
@@ -235,55 +236,13 @@ export function ChatContainer() {
     createNewChat,
   })
 
-  const { deleteMessages, deleteMessageState, deleteMessageDB } =
-    useChatOperations({
-      chatId,
-      messages: messages,
-      setMessages: setMessages,
-    })
+  const { deleteMessageState, deleteMessageDB } =
+  useChatOperations({
+    chatId,
+    messages: messages,
+    setMessages: setMessages,
+  })
 
-  // const handleDeleteMessage = useCallback(
-  //   async (messageId: string) => {
-  //     if (!chatId) return
-
-  //     try {
-  //       const messageToDelete = messages.find((msg) => msg.id === messageId)
-
-  //       if (!messageToDelete) {
-  //         toast({
-  //           title: "Message not found",
-  //           status: "error",
-  //         })
-  //         return
-  //       }
-
-  //       const sortedMessages = [...messages].sort(
-  //         (a, b) =>
-  //           new Date(a.createdAt || 0).getTime() -
-  //           new Date(b.createdAt || 0).getTime()
-  //       )
-
-  //       const isFirstMessage = sortedMessages.length > 0 && sortedMessages[0].id === messageId
-
-  //       if (isFirstMessage) {
-  //         await deleteChat(chatId, chatId, () => {
-  //           router.push("/")
-  //         })
-  //       } else {
-  //         await deleteMessageState(messageId, chatId)
-  //         const messageTimestamp = messageToDelete.createdAt || new Date().toISOString()
-  //         await deleteMessageDB(messageTimestamp.toString(), chatId)
-  //       }
-  //     } catch (error) {
-  //       console.error("❌ Delete failed:", error)
-  //       toast({
-  //         title: "Failed to delete messages",
-  //         status: "error",
-  //       })
-  //     }
-  //   },
-  //   [chatId, messages, deleteMessageState, deleteMessageDB, deleteChat, router]
-  // )
   const handleDeleteMessage = useCallback(
     async (messageId: string) => {
       if (!chatId) return
@@ -299,35 +258,22 @@ export function ChatContainer() {
           return
         }
 
-        // Sort messages by timestamp to determine if it's the first message
         const sortedMessages = [...messages].sort(
           (a, b) =>
             new Date(a.createdAt || 0).getTime() -
             new Date(b.createdAt || 0).getTime()
         )
 
-        const isFirstMessage =
-          sortedMessages.length > 0 && sortedMessages[0].id === messageId
+        const isFirstMessage = sortedMessages.length > 0 && sortedMessages[0].id === messageId
 
-        // If it's the first message, also delete the entire chat
         if (isFirstMessage) {
           await deleteChat(chatId, chatId, () => {
             router.push("/")
           })
-          toast({
-            title: "Chat deleted successfully",
-            status: "success",
-          })
         } else {
-          // Convert timestamp to string for deleteMessages
-          const messageTimestamp = messageToDelete.createdAt || new Date()
-          const timestampString =
-            messageTimestamp instanceof Date
-              ? messageTimestamp.toISOString()
-              : messageTimestamp
-
-          // Delete messages immediately (this will update state first, then DB)
-          await deleteMessages({ timestamp: timestampString })
+          await deleteMessageState(messageId, chatId)
+          const messageTimestamp = messageToDelete.createdAt || new Date().toISOString()
+          await deleteMessageDB(messageTimestamp.toString(), chatId)
         }
       } catch (error) {
         console.error("❌ Delete failed:", error)
@@ -337,7 +283,7 @@ export function ChatContainer() {
         })
       }
     },
-    [chatId, messages, deleteMessages, deleteChat, router]
+    [chatId, messages, deleteMessageState, deleteMessageDB, deleteChat, router]
   )
 
   const { shouldShowLoading } = useChatLoading(
@@ -395,6 +341,7 @@ export function ChatContainer() {
       messages,
       status,
       isSubmitting,
+      isLoadingDelete,
       onDelete: handleDeleteMessage,
       onEdit: async () => {},
       onReload: handleReload,
