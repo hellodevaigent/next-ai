@@ -2,6 +2,23 @@ import { createClient } from "@/lib/supabase/server"
 import type { Message as MessageAISDK } from "ai"
 import { NextRequest, NextResponse } from "next/server"
 
+// Helper function to safely convert to ISO string
+function toISOString(date: any): string {
+  if (!date) return new Date().toISOString()
+  
+  // If it's already a string, return it
+  if (typeof date === 'string') return date
+  
+  // If it's a Date object, convert to ISO string
+  if (date instanceof Date) return date.toISOString()
+  
+  // If it's a number (timestamp), convert to Date first
+  if (typeof date === 'number') return new Date(date).toISOString()
+  
+  // Fallback to current date
+  return new Date().toISOString()
+}
+
 // GET /api/messages/[chatId] - Get messages for specific chat
 export async function GET(
   request: NextRequest,
@@ -97,7 +114,7 @@ export async function POST(
         role: message.role,
         content: message.content,
         experimental_attachments: message.experimental_attachments,
-        created_at: message.createdAt?.toISOString() || new Date().toISOString(),
+        created_at: toISOString(message.createdAt),
         message_group_id: message.message_group_id || null,
         model: message.model || null,
         user_id: authData.user.id,
@@ -121,7 +138,7 @@ export async function POST(
         role: msg.role,
         content: msg.content,
         experimental_attachments: msg.experimental_attachments,
-        created_at: msg.createdAt?.toISOString() || new Date().toISOString(),
+        created_at: toISOString(msg.createdAt),
         message_group_id: (msg as any).message_group_id || null,
         model: (msg as any).model || null,
         user_id: authData.user.id,
@@ -151,6 +168,125 @@ export async function POST(
 }
 
 // DELETE /api/messages/[chatId] - Delete all messages for chat or from specific message
+// export async function DELETE(
+//   request: NextRequest,
+//   { params }: { params: Promise<{ chatId: string }> }
+// ) {
+//   try {
+//     const { chatId } = await params
+//     const supabase = await createClient()
+
+//     if (!supabase) {
+//       return NextResponse.json(
+//         { error: "Supabase not available in this deployment." },
+//         { status: 200 }
+//       )
+//     }
+
+//     const { data: authData } = await supabase.auth.getUser()
+
+//     if (!authData?.user?.id) {
+//       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+//     }
+
+//     if (!chatId) {
+//       return NextResponse.json({ error: "Missing chatId" }, { status: 400 })
+//     }
+
+//     const url = new URL(request.url)
+//     const messageId = url.searchParams.get("messageId")
+
+//     // Delete from specific message onwards
+//     if (messageId) {
+//       // First, verify the chat belongs to the user
+//       const { data: chatData, error: chatError } = await supabase
+//         .from("chats")
+//         .select("user_id")
+//         .eq("id", chatId)
+//         .single()
+
+//       if (chatError || !chatData || chatData.user_id !== authData.user.id) {
+//         console.error("Chat verification failed:", chatError)
+//         return NextResponse.json(
+//           { error: "Forbidden: Chat not found or not owned by user" },
+//           { status: 403 }
+//         )
+//       }
+
+//       // Get the anchor message to find the timestamp
+//       const { data: anchorMessage, error: findError } = await supabase
+//         .from("messages")
+//         .select("created_at")
+//         .eq("id", messageId)
+//         .eq("chat_id", chatId)
+//         .single()
+
+//       if (findError || !anchorMessage) {
+//         console.error("Anchor message not found:", findError)
+//         return NextResponse.json(
+//           { error: "Anchor message not found" },
+//           { status: 404 }
+//         )
+//       }
+
+//       // Delete all messages from the anchor timestamp onwards
+//       // Use the authenticated user's ID to ensure we only delete their messages
+//       const { error: deleteError } = await supabase
+//         .from("messages")
+//         .delete()
+//         .eq("chat_id", chatId)
+//         .gte("created_at", anchorMessage.created_at)
+
+//       if (deleteError) {
+//         console.error("Failed to delete messages from anchor:", deleteError)
+//         return NextResponse.json(
+//           { error: "Failed to delete messages from anchor" },
+//           { status: 500 }
+//         )
+//       }
+
+//       return NextResponse.json({ success: true })
+//     }
+
+//     // Delete all messages for chat
+//     // First verify the chat belongs to the user
+//     const { data: chatData, error: chatError } = await supabase
+//       .from("chats")
+//       .select("user_id")
+//       .eq("id", chatId)
+//       .single()
+
+//     if (chatError || !chatData || chatData.user_id !== authData.user.id) {
+//       console.error("Chat verification failed:", chatError)
+//       return NextResponse.json(
+//         { error: "Forbidden: Chat not found or not owned by user" },
+//         { status: 403 }
+//       )
+//     }
+
+//     const { error } = await supabase
+//       .from("messages")
+//       .delete()
+//       .eq("chat_id", chatId)
+//       .eq("user_id", authData.user.id)
+
+//     if (error) {
+//       console.error("Failed to clear messages from database:", error)
+//       return NextResponse.json(
+//         { error: "Failed to clear messages from database" },
+//         { status: 500 }
+//       )
+//     }
+
+//     return NextResponse.json({ success: true })
+//   } catch (error) {
+//     console.error("Error in DELETE messages:", error)
+//     return NextResponse.json(
+//       { error: "Failed to process request" },
+//       { status: 500 }
+//     )
+//   }
+// }
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ chatId: string }> }
@@ -177,42 +313,45 @@ export async function DELETE(
     }
 
     const url = new URL(request.url)
-    const messageId = url.searchParams.get("messageId")
+    const timestamp = url.searchParams.get("timestamp")
 
-    // Delete from specific message onwards
-    if (messageId) {
-      const { data: anchorMessage, error: findError } = await supabase
-        .from("messages")
-        .select("chat_id, created_at, user_id")
-        .eq("id", messageId)
-        .eq("user_id", authData.user.id)
+    // Delete from specific timestamp onwards
+    if (timestamp) {
+      // First, verify the chat belongs to the user
+      const { data: chatData, error: chatError } = await supabase
+        .from("chats")
+        .select("user_id")
+        .eq("id", chatId)
         .single()
 
-      if (findError || !anchorMessage) {
+      if (chatError || !chatData || chatData.user_id !== authData.user.id) {
+        console.error("Chat verification failed:", chatError)
         return NextResponse.json(
-          { error: "Anchor message not found" },
-          { status: 404 }
-        )
-      }
-
-      if (anchorMessage.user_id !== authData.user.id) {
-        return NextResponse.json(
-          { error: "Forbidden: User is not the owner" },
+          { error: "Forbidden: Chat not found or not owned by user" },
           { status: 403 }
         )
       }
 
-      const { error } = await supabase
+      // Validate timestamp format (optional)
+      const parsedTimestamp = new Date(timestamp)
+      if (isNaN(parsedTimestamp.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid timestamp format" },
+          { status: 400 }
+        )
+      }
+
+      // Delete all messages from the specified timestamp onwards
+      const { error: deleteError } = await supabase
         .from("messages")
         .delete()
         .eq("chat_id", chatId)
-        .eq("user_id", authData.user.id)
-        .gte("created_at", anchorMessage.created_at)
+        .gte("created_at", timestamp)
 
-      if (error) {
-        console.error("Failed to delete messages from anchor:", error)
+      if (deleteError) {
+        console.error("Failed to delete messages from timestamp:", deleteError)
         return NextResponse.json(
-          { error: "Failed to delete messages from anchor" },
+          { error: "Failed to delete messages from timestamp" },
           { status: 500 }
         )
       }
@@ -220,7 +359,21 @@ export async function DELETE(
       return NextResponse.json({ success: true })
     }
 
-    // Delete all messages for chat
+    // Delete all messages for chat (ketika tidak ada timestamp)
+    const { data: chatData, error: chatError } = await supabase
+      .from("chats")
+      .select("user_id")
+      .eq("id", chatId)
+      .single()
+
+    if (chatError || !chatData || chatData.user_id !== authData.user.id) {
+      console.error("Chat verification failed:", chatError)
+      return NextResponse.json(
+        { error: "Forbidden: Chat not found or not owned by user" },
+        { status: 403 }
+      )
+    }
+
     const { error } = await supabase
       .from("messages")
       .delete()

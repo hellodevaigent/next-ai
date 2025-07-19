@@ -1,119 +1,118 @@
 import { toast } from "@/components/ui/toast"
-import { checkRateLimits } from "@/lib/api"
-import type { Chats } from "@/lib/store/chat-store/types"
-import { REMAINING_QUERY_ALERT_THRESHOLD } from "@/lib/config"
 import { Message } from "@ai-sdk/react"
+import { useCallback } from "react"
+import { clearMessagesByTimestampForChat } from "../store/chat-store/messages/api"
 
 type UseChatOperationsProps = {
-  isAuthenticated: boolean
   chatId: string | null
   messages: Message[]
-  selectedModel: string
-  systemPrompt: string
-  createNewChat: (
-    userId: string,
-    title?: string,
-    model?: string,
-    isAuthenticated?: boolean,
-    systemPrompt?: string
-  ) => Promise<Chats | undefined>
-  setHasDialogAuth: (value: boolean) => void
+  setMessages: (
+    messages: Message[] | ((messages: Message[]) => Message[])
+  ) => void
 }
 
 export function useChatOperations({
-  isAuthenticated,
   chatId,
   messages,
-  selectedModel,
-  systemPrompt,
-  createNewChat,
-  setHasDialogAuth,
+  setMessages,
 }: UseChatOperationsProps) {
-  // Chat utilities
-  const checkLimitsAndNotify = async (uid: string): Promise<boolean> => {
+
+  const deleteMessageState = async (messageId: string, targetChatId?: string) => {
+    const chatToDelete = targetChatId || chatId
+    if (!chatToDelete) return
+
     try {
-      const rateData = await checkRateLimits(uid, isAuthenticated)
-
-      if (rateData.remaining === 0 && !isAuthenticated) {
-        setHasDialogAuth(true)
-        return false
-      }
-
-      if (rateData.remaining === REMAINING_QUERY_ALERT_THRESHOLD) {
-        toast({
-          title: `Only ${rateData.remaining} quer${
-            rateData.remaining === 1 ? "y" : "ies"
-          } remaining today.`,
-          status: "info",
-        })
-      }
-
-      if (rateData.remainingPro === REMAINING_QUERY_ALERT_THRESHOLD) {
-        toast({
-          title: `Only ${rateData.remainingPro} pro quer${
-            rateData.remainingPro === 1 ? "y" : "ies"
-          } remaining today.`,
-          status: "info",
-        })
-      }
-
-      return true
-    } catch (err) {
-      console.error("Rate limit check failed:", err)
-      return false
-    }
-  }
-
-  const ensureChatExists = async (userId: string, input: string) => {
-    if (!isAuthenticated) {
-      const storedGuestChatId = localStorage.getItem("guestChatId")
-      if (storedGuestChatId) return storedGuestChatId
-    }
-
-    if (messages.length === 0) {
-      try {
-        const newChat = await createNewChat(
-          userId,
-          input,
-          selectedModel,
-          isAuthenticated,
-          systemPrompt
-        )
-
-        if (!newChat) return null
-        if (isAuthenticated) {
-          window.history.pushState(null, "", `/c/${newChat.id}`)
-        } else {
-          localStorage.setItem("guestChatId", newChat.id)
-        }
-
-        return newChat.id
-      } catch (err: unknown) {
-        let errorMessage = "Something went wrong."
-        try {
-          const errorObj = err as { message?: string }
-          if (errorObj.message) {
-            const parsed = JSON.parse(errorObj.message)
-            errorMessage = parsed.error || errorMessage
+      if (chatToDelete === chatId) {
+        setMessages((prevMessages) => {
+          const targetMessage = prevMessages.find(msg => msg.id === messageId)
+          
+          if (!targetMessage) {
+            return prevMessages
           }
-        } catch {
-          const errorObj = err as { message?: string }
-          errorMessage = errorObj.message || errorMessage
-        }
-        toast({
-          title: errorMessage,
-          status: "error",
+          
+          const targetIndex = prevMessages.findIndex(msg => msg.id === messageId)
+          const filteredMessages = prevMessages.slice(0, targetIndex)          
+          return filteredMessages
         })
-        return null
       }
+    } catch (error) {
+      console.error("❌ Delete failed:", error)
+      throw error
     }
-
-    return chatId
   }
+
+  const deleteMessageDB = async (timestamp: string, targetChatId?: string) => {
+    const chatToDelete = targetChatId || chatId
+    if (!chatToDelete) return
+
+    try {
+      const isoTimestamp = new Date(timestamp).toISOString()
+      
+      await clearMessagesByTimestampForChat(chatToDelete, isoTimestamp)
+    } catch (error) {
+      console.error("Failed to delete messages from timestamp:", error)
+      toast({ title: "Failed to delete messages", status: "error" })
+      throw error
+    }
+  }
+
+  const deleteMessages = useCallback(async (
+    criteria: { messageId: string } | { timestamp: string },
+    targetChatId?: string
+  ) => {
+    const chatToDelete = targetChatId || chatId
+    if (!chatToDelete) return
+
+    try {
+      // Handle deletion by message ID
+      if ('messageId' in criteria) {
+        if (chatToDelete === chatId) {
+          setMessages((prevMessages) => {
+            const targetIndex = prevMessages.findIndex(msg => msg.id === criteria.messageId)
+            if (targetIndex === -1) return prevMessages
+            return prevMessages.slice(0, targetIndex)
+          })
+        }
+      }
+      
+      // Handle deletion by timestamp
+      else if ('timestamp' in criteria) {
+        const isoTimestamp = new Date(criteria.timestamp).toISOString()
+        await clearMessagesByTimestampForChat(chatToDelete, isoTimestamp)
+        
+        if (chatToDelete === chatId) {
+          const targetTimestamp = new Date(isoTimestamp)
+          setMessages((prevMessages) => {
+            return prevMessages.filter(msg => {
+              const messageTimestamp = new Date(msg.createdAt || 0)
+              return messageTimestamp < targetTimestamp
+            })
+          })
+        }
+      }
+      
+    } catch (error) {
+      console.error("❌ Delete failed:", error)
+      toast({ title: "Failed to delete messages", status: "error" })
+      throw error
+    }
+  }, [chatId, setMessages])
+
+  const handleEdit = useCallback(
+    (id: string, newText: string) => {
+      setMessages(
+        messages.map((message) =>
+          message.id === id ? { ...message, content: newText } : message
+        )
+      )
+    },
+    [messages, setMessages]
+  )
 
   return {
-    // Utils
-    checkLimitsAndNotify,
-    ensureChatExists,
+    deleteMessages,
+    deleteMessageState,
+    deleteMessageDB,
+    handleEdit,
   }
 }

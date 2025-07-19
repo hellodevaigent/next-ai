@@ -13,12 +13,13 @@ import { useUserPreferences } from "@/lib/store/user-preference-store/provider"
 import { useUser } from "@/lib/store/user-store/provider"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "motion/react"
-import { redirect } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 import { lazy, memo, Suspense, useCallback, useMemo, useState } from "react"
 import { useChatCore } from "../../lib/hooks/use-chat-core"
 import { useFileUpload } from "../../lib/hooks/use-file-upload"
 import { ConversationSkeleton } from "../skeleton/conversation"
 import { toast } from "../ui/toast"
+import { useChatOperations } from "@/lib/hooks/use-chat-operations"
 
 // Lazy load heavy components
 const FeedbackWidget = lazy(() =>
@@ -118,12 +119,14 @@ const DialogAuthFallback = memo(() => <div className="h-0 w-0" />)
 DialogAuthFallback.displayName = "DialogAuthFallback"
 
 export function ChatContainer() {
+  const router = useRouter()
   const { chatId } = useChatSession()
   const {
     createNewChat,
     getChatById,
     updateChatModel,
     bumpChat,
+    deleteChat,
     isLoading: isChatsLoading,
   } = useChats()
 
@@ -213,6 +216,7 @@ export function ChatContainer() {
     handleSuggestion,
     handleReload,
     handleInputChange,
+    setMessages
   } = useChatCore({
     initialMessages,
     draftValue,
@@ -230,6 +234,73 @@ export function ChatContainer() {
     setHasDialogAuth: setHasDialogAuthCallback,
     createNewChat,
   })
+
+  const { deleteMessages } =
+    useChatOperations({
+      chatId,
+      messages: messages,
+      setMessages: setMessages,
+    })
+
+  const handleDeleteMessage = useCallback(
+    async (messageId: string) => {
+      if (!chatId) return
+
+      try {
+        const messageToDelete = messages.find((msg) => msg.id === messageId)
+        console.log('🗑️ Delete request for:', messageId, messageToDelete ? 'FOUND' : 'NOT_FOUND')
+
+        if (!messageToDelete) {
+          toast({
+            title: "Message not found",
+            status: "error",
+          })
+          return
+        }
+
+        // Sort messages by timestamp to determine if it's the first message
+        const sortedMessages = [...messages].sort(
+          (a, b) =>
+            new Date(a.createdAt || 0).getTime() -
+            new Date(b.createdAt || 0).getTime()
+        )
+
+        const isFirstMessage = sortedMessages.length > 0 && sortedMessages[0].id === messageId
+
+        if (isFirstMessage) {
+          // Delete entire chat if it's the first message
+          await deleteChat(chatId, chatId, () => {
+            router.push("/")
+          })
+          toast({
+            title: "Chat deleted successfully",
+            status: "success",
+          })
+        } else {
+          // Use unified deleteMessages function with timestamp for reliable deletion
+          const messageTimestamp = messageToDelete.createdAt || new Date()
+          const timestampString = messageTimestamp instanceof Date 
+            ? messageTimestamp.toISOString() 
+            : messageTimestamp
+          console.log('🕒 Deleting messages from timestamp:', timestampString)
+          
+          await deleteMessages({ timestamp: timestampString })
+
+          toast({
+            title: "Messages deleted successfully",
+            status: "success",
+          })
+        }
+      } catch (error) {
+        console.error("❌ Delete failed:", error)
+        toast({
+          title: "Failed to delete messages",
+          status: "error",
+        })
+      }
+    },
+    [chatId, messages, deleteMessages, deleteChat, router]
+  )
 
   const { shouldShowLoading } = useChatLoading(
     chatId,
@@ -286,7 +357,7 @@ export function ChatContainer() {
       messages,
       status,
       isSubmitting,
-      onDelete: () => {},
+      onDelete: handleDeleteMessage,
       onEdit: async () => {},
       onReload: handleReload,
     }),

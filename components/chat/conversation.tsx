@@ -81,7 +81,7 @@ export function Conversation({
             )
           })}
           {isSubmitting && (
-            <div className="group flex w-full max-w-3xl flex-col items-start gap-2 px-6 pt-4 pb-2">
+            <div className="group min-h-scroll-anchor flex w-full max-w-3xl flex-col items-start gap-2 px-6 pt-4 pb-2">
               <Loader />
             </div>
           )}

@@ -45,7 +45,7 @@ export function MessageUser({
   copied,
   copyToClipboard,
   onEdit,
-  onReload,
+  onDelete,
   id,
   className,
   isLast,
@@ -56,6 +56,7 @@ export function MessageUser({
   const [editInput, setEditInput] = useState(children)
   const [isEditing, setIsEditing] = useState(false)
   const [showActions, setShowActions] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const contentRef = useRef<HTMLDivElement>(null)
   const actionsRef = useRef<HTMLDivElement>(null)
@@ -81,6 +82,26 @@ export function MessageUser({
     } catch (error) {
       console.error('Failed to save message:', error)
     }
+  }
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (showDeleteConfirm) {
+      // Confirm delete
+      if (onDelete && id) {
+        onDelete(id)
+      }
+      setShowDeleteConfirm(false)
+      setShowActions(false)
+    } else {
+      // Show confirmation
+      setShowDeleteConfirm(true)
+    }
+  }
+
+  const handleDeleteCancel = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowDeleteConfirm(false)
   }
 
   const toggleActions = (e: React.MouseEvent) => {
@@ -225,27 +246,56 @@ export function MessageUser({
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-stretch justify-between gap-1">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  copyToClipboard()
-                }}
-                className="-mt-[2px] flex cursor-pointer flex-row items-center gap-1.5 rounded-md p-1.5 py-1 text-xs transition select-auto active:scale-95"
-                aria-label="Copy text"
-              >
-                {copied ? "copied" : "Copy"}
-              </button>
-              {isLast && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="text-background-primary flex flex-row items-center gap-1.5 rounded-md p-1.5 py-0.5 text-xs transition select-auto active:scale-95"
-                  aria-label="Edit"
+            {showDeleteConfirm ? (
+              <div className="flex items-center gap-1 p-1">
+                <span className="text-xs text-destructive">Delete all from here?</span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleDeleteCancel}
+                  className="h-6 px-2 text-xs"
                 >
-                  Edit
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  className="h-6 px-2 text-xs"
+                >
+                  Delete
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-stretch justify-between gap-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    copyToClipboard()
+                  }}
+                  className="-mt-[2px] flex cursor-pointer flex-row items-center gap-1.5 rounded-md p-1.5 py-1 text-xs transition select-auto active:scale-95"
+                  aria-label="Copy text"
+                >
+                  {copied ? "copied" : "Copy"}
                 </button>
-              )}
-            </div>
+                {isLast && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="text-background-primary flex flex-row items-center gap-1.5 rounded-md p-1.5 py-0.5 text-xs transition select-auto active:scale-95"
+                    aria-label="Edit"
+                  >
+                    Edit
+                  </button>
+                )}
+                <button
+                  onClick={handleDelete}
+                  className="text-destructive hover:text-destructive/80 flex flex-row items-center gap-1.5 rounded-md p-1.5 py-0.5 text-xs transition select-auto active:scale-95"
+                  aria-label="Delete message and all following messages"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

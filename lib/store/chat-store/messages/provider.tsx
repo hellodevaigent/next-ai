@@ -21,7 +21,7 @@ interface MessagesContextType {
   saveAllMessages: (messages: MessageAISDK[]) => Promise<void>
   cacheAndAddMessage: (message: MessageAISDK) => Promise<void>
   resetMessages: () => Promise<void>
-  deleteMessages: (targetChatId?: string) => Promise<void> 
+  deleteMessages: (targetChatId?: string) => Promise<void>
 }
 
 const MessagesContext = createContext<MessagesContextType | null>(null)
@@ -68,13 +68,15 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
   }, [chatId])
 
   const refresh = async () => {
-    if (!chatId) return
+    if (!chatId) {
+      return
+    }
 
     try {
       const fresh = await getMessagesFromDb(chatId)
       setMessages(fresh)
     } catch {
-      toast({ title: "Failed to refresh messages", status: "error" })
+      console.error("❌ [PROVIDER] refresh: Failed to refresh messages")
     }
   }
 
@@ -82,6 +84,8 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     if (!chatId) return
 
     try {
+      await refresh()
+
       setMessages((prev) => {
         const updated = [...prev, message]
         writeToIndexedDB("messages", { id: chatId, messages: updated })
@@ -111,7 +115,7 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     if (chatToDelete === chatId) {
       setMessages([])
     }
-    
+
     await clearMessagesForChat(chatToDelete)
   }
 

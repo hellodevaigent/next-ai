@@ -79,19 +79,65 @@ export async function deleteMessagesFromDbByMessageId(
 ) {
   if (!isSupabaseEnabled) return
 
-  const response = await fetchClient(
-    `${API_ROUTE_CONVERSATION}/${chatId}?messageId=${messageId}`,
-    {
-      method: "DELETE",
-    }
-  )
+  try {
+    const response = await fetchClient(
+      `${API_ROUTE_CONVERSATION}/${chatId}?messageId=${messageId}`,
+      {
+        method: "DELETE",
+      }
+    )
 
-  if (!response.ok) {
-    throw new Error("Failed to delete messages from anchor")
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error("Delete messages API error:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      })
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error("Failed to delete messages from anchor:", error)
+    throw error
   }
 }
 
-// LocalIndxedDB
+export async function deleteMessagesFromDbByTimestamp(
+  chatId: string,
+  timestamp: string
+) {
+  if (!isSupabaseEnabled) return
+
+  try {
+    // Ensure timestamp is in ISO format
+    const isoTimestamp = new Date(timestamp).toISOString()
+    
+    const response = await fetchClient(
+      `${API_ROUTE_CONVERSATION}/${chatId}?timestamp=${encodeURIComponent(isoTimestamp)}`,
+      {
+        method: "DELETE",
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error("Delete messages API error:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      })
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error("Failed to delete messages from timestamp:", error)
+    throw error
+  }
+}
+
 export async function getCachedMessages(
   chatId: string
 ): Promise<MessageAISDK[]> {
@@ -137,4 +183,55 @@ export async function clearMessagesCache(chatId: string): Promise<void> {
 export async function clearMessagesForChat(chatId: string): Promise<void> {
   await deleteMessagesFromDb(chatId)
   await clearMessagesCache(chatId)
+}
+
+export async function clearMessagesByTimestampForChat(
+  chatId: string,
+  timestamp: string
+): Promise<MessageAISDK[]> {  
+  try {
+    // Delete from database (Supabase) if enabled
+    if (isSupabaseEnabled) {
+      await deleteMessagesFromDbByTimestamp(chatId, timestamp)
+    }
+    
+    // Get current cached messages from IndexedDB
+    const currentMessages = await getCachedMessages(chatId)
+    
+    // Parse the provided timestamp
+    const anchorTimestamp = new Date(timestamp)
+    
+    // Filter out messages with timestamp >= anchor timestamp
+    const updatedMessages = currentMessages.filter(msg => {
+      const messageTimestamp = new Date(msg.createdAt || 0)
+      const shouldKeep = messageTimestamp < anchorTimestamp
+      return shouldKeep
+    })
+        
+    // Update IndexedDB with the filtered messages
+    await writeToIndexedDB("messages", { id: chatId, messages: updatedMessages })
+    
+    // Return the updated messages so the UI can sync
+    return updatedMessages
+  } catch (error) {
+    console.error("❌ Error in clearMessagesByTimestampForChat:", error)
+    
+    if (isSupabaseEnabled && error instanceof Error) {
+      throw new Error(`Failed to delete messages: ${error.message}`)
+    }
+    
+    if (!isSupabaseEnabled) {
+      // Still return the filtered messages for cache-only mode
+      const currentMessages = await getCachedMessages(chatId)
+      const anchorTimestamp = new Date(timestamp)
+      const updatedMessages = currentMessages.filter(msg => {
+        const messageTimestamp = new Date(msg.createdAt || 0)
+        return messageTimestamp < anchorTimestamp
+      })
+      await writeToIndexedDB("messages", { id: chatId, messages: updatedMessages })
+      return updatedMessages
+    }
+    
+    throw error
+  }
 }
