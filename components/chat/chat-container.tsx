@@ -235,7 +235,7 @@ export function ChatContainer() {
     createNewChat,
   })
 
-  const { deleteMessages } =
+  const { deleteMessageState, deleteMessageDB } =
     useChatOperations({
       chatId,
       messages: messages,
@@ -248,7 +248,6 @@ export function ChatContainer() {
 
       try {
         const messageToDelete = messages.find((msg) => msg.id === messageId)
-        console.log('🗑️ Delete request for:', messageId, messageToDelete ? 'FOUND' : 'NOT_FOUND')
 
         if (!messageToDelete) {
           toast({
@@ -258,7 +257,6 @@ export function ChatContainer() {
           return
         }
 
-        // Sort messages by timestamp to determine if it's the first message
         const sortedMessages = [...messages].sort(
           (a, b) =>
             new Date(a.createdAt || 0).getTime() -
@@ -268,28 +266,13 @@ export function ChatContainer() {
         const isFirstMessage = sortedMessages.length > 0 && sortedMessages[0].id === messageId
 
         if (isFirstMessage) {
-          // Delete entire chat if it's the first message
           await deleteChat(chatId, chatId, () => {
             router.push("/")
           })
-          toast({
-            title: "Chat deleted successfully",
-            status: "success",
-          })
         } else {
-          // Use unified deleteMessages function with timestamp for reliable deletion
-          const messageTimestamp = messageToDelete.createdAt || new Date()
-          const timestampString = messageTimestamp instanceof Date 
-            ? messageTimestamp.toISOString() 
-            : messageTimestamp
-          console.log('🕒 Deleting messages from timestamp:', timestampString)
-          
-          await deleteMessages({ timestamp: timestampString })
-
-          toast({
-            title: "Messages deleted successfully",
-            status: "success",
-          })
+          await deleteMessageState(messageId, chatId)
+          const messageTimestamp = messageToDelete.createdAt || new Date().toISOString()
+          await deleteMessageDB(messageTimestamp.toString(), chatId)
         }
       } catch (error) {
         console.error("❌ Delete failed:", error)
@@ -299,7 +282,7 @@ export function ChatContainer() {
         })
       }
     },
-    [chatId, messages, deleteMessages, deleteChat, router]
+    [chatId, messages, deleteMessageState, deleteMessageDB, deleteChat, router]
   )
 
   const { shouldShowLoading } = useChatLoading(
